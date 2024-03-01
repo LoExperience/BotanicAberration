@@ -2,11 +2,17 @@ import * as THREE from 'three'
 
 export default class TreeSegment
 {
-    constructor(start, end, curveControlPoint, subDivision, radius, radialSegments){
+    constructor(start, end, subDivision, radius, radialSegments){
         // setting params as attributes
         this.start = start
         this.end = end
-        this.curveControlPoint = curveControlPoint
+
+        const midPoint = new THREE.Vector3().copy(this.start)
+        midPoint.add(this.end)
+        midPoint.multiplyScalar(0.5)
+
+
+        this.curveControlPoint = midPoint
         this.subDivision = subDivision
         this.radius = radius
         this.radialSegments = radialSegments
@@ -27,6 +33,14 @@ export default class TreeSegment
         
         //create mesh
         this.tubeMesh = new THREE.Mesh(this.tubeGeometry, this.tubeMaterial)
+    }
+
+    getMidPoint(v1, v2){
+        console.log('midpointing')
+        const midPoint = new THREE.Vector3().copy(v1)
+        midPoint.add(v2)
+        midPoint.multiplyScalar(0.5)
+        return midPoint
     }
 
     getMesh(){

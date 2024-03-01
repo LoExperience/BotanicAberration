@@ -1,7 +1,9 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
-import TreeSegment from './Classes/TreeSegment'
+import TreeSegment from './Classes/TreeSegment.js'
+import LSystem from './Classes/LSystem.js'
+
 
 
 /**
@@ -19,13 +21,35 @@ const gui = new GUI()
 
 
 // Test Branch
+// const v1 = new THREE.Vector3(5, 0, 5);
+// const v2 = new THREE.Vector3(-5, 0, -5);
+// const vControl = new THREE.Vector3(0, 0, 0);
+// const treeSegment = new TreeSegment(v1, v2,  20, 0.5 , 8)
+// scene.add(treeSegment.getMesh())
 
-const v1 = new THREE.Vector3(5, 0, 5);
-const v2 = new THREE.Vector3(-5, 0, -5);
-const vControl = new THREE.Vector3(0, 0, 0);
+// const boxGeo = new THREE.BoxGeometry(1,1,1)
+// const boxMat = new THREE.MeshBasicMaterial({color: 0x00ff00})
+// const boxMesh = new THREE.Mesh(boxGeo, boxMat)
+// boxMesh.rotateX(45)
+// scene.add(boxMesh)
 
-const treeSegment = new TreeSegment(v1, v2, vControl, 20, 0.5 , 8)
-scene.add(treeSegment.getMesh())
+// Starting to generate a new tree
+const newTree = new LSystem('F', {'F': 'FF'}, 2, 1)
+const treeString = newTree.applyRules()
+const treeSegments = newTree.generateTreePaths(treeString)
+treeSegments.forEach(element => {
+    const newSegment = new TreeSegment(element[0], element[1], 20, 0.5 , 8)
+    scene.add(newSegment.getMesh())
+});
+
+
+
+
+
+
+
+
+
 
 // Sizes
 const sizes = {

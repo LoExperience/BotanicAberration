@@ -41,32 +41,32 @@ function visualizeTree(lSystemString, canvasId, angle, branchLength) {
 
         // If character is 'F', then move to new point based on rotation and length parameters
         if (char === 'F') {
-            const endX = x + branchLength * Math.cos(currentAngle * Math.PI / 180);
-            const endY = y - branchLength * Math.sin(currentAngle * Math.PI / 180);
-            ctx.lineTo(endX, endY);
+            const endX = x + branchLength * Math.cos(currentAngle * Math.PI / 180)
+            const endY = y - branchLength * Math.sin(currentAngle * Math.PI / 180)
+            ctx.lineTo(endX, endY)
             x = endX; // save new X co-ord for next character
             y = endY; // save new X co-ord for next character
         }
         // If '+' then rotate to the left 
         else if (char === '+') {
-            currentAngle -= angle;
+            currentAngle -= angle
         }
         // If '-' then rotate to the left 
         else if (char === '-') {
-            currentAngle += angle;
+            currentAngle += angle
         }
 
         // Handling branching. If '[' then save the state into a stack
         else if (char === '[') {  // handles branching by saving point of divergance
-            stack.push({x: x, y: y, angle: currentAngle});
+            stack.push({x: x, y: y, angle: currentAngle})
             console.log('[: starting branch. Angle: ' + currentAngle + ' position ' + x + ',' + y)   
             
         // Handling branching.  If ']' then pop stack and return to last saved point
         } else if (char === ']') {
-            const state = stack.pop();
-            x = state.x;
-            y = state.y;
-            currentAngle = state.angle;
+            const state = stack.pop()
+            x = state.x
+            y = state.y
+            currentAngle = state.angle
             ctx.moveTo(x,y)
             console.log('end of branch, going back to ' + x + ',' + y + ' with angle ' + +currentAngle)
         }
@@ -74,18 +74,18 @@ function visualizeTree(lSystemString, canvasId, angle, branchLength) {
             //pass
         }
     }
-    ctx.stroke(); 
+    ctx.stroke()
 }
 
 // Testing using examples from 'The Algorithmic Beauty of Plants' by Przemyslaw Prusinkiewicz and Aristid Lindenmayer
-const start = 'X';
-const test1 = {'X': 'F[+X][-X]FX', 'F': 'FF'};  
-const test2 = {'F': 'FF', 'X':'F+[[X]-X]-F[-FX]+X'};
-const test3 = {'X': '-F'};
+const start = 'X'
+const test1 = {'X': 'F[+X][-X]FX', 'F': 'FF'}
+const test2 = {'F': 'FF', 'X':'F+[[X]-X]-F[-FX]+X'}
+const test3 = {'X': '-F'}
 const rules = test2
-const iterations = 5;
-const angle = 10;
-const branchLength = 5; // Adjust branch length
+const iterations = 5
+const angle = 10
+const branchLength = 5 // Adjust branch length
 
-const lsystemString = lSystem(start, rules, iterations);
-visualizeTree(lsystemString, 'treeCanvas', angle, branchLength); 
+const lsystemString = lSystem(start, rules, iterations)
+visualizeTree(lsystemString, 'treeCanvas', angle, branchLength)
