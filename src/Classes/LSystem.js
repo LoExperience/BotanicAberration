@@ -2,11 +2,12 @@ import * as THREE from 'three'
 
 export default class LSystem
 {
-    constructor(start, rules, iterations, baseLength){
+    constructor(start, rules, iterations, baseLength, angle){
         this.start = start
         this.rules = rules
         this.iterations = iterations
         this.baseLength = baseLength
+        this.angle = angle
         this.segments = []
         this.startingLength = 1
     }
@@ -54,6 +55,28 @@ export default class LSystem
                 x = endX; 
                 y = endY; 
                 z = endZ; 
+            }    
+
+            // Handling branching. If '[' then save the state into a stack
+            else if (char === '[') {  // handles branching by saving point of divergance
+                stack.push({x: x, y: y, z: z, angle: currentAngle})
+                
+            // Handling branching.  If ']' then pop stack and return to last saved point
+            } else if (char === ']') {
+                const state = stack.pop()
+                x = state.x
+                y = state.y
+                z = state.z
+                currentAngle = state.angle
+            }            
+            // If '+' then rotate to the left 
+            else if (char === '+') {
+                currentAngle -= this.angle
+            }
+
+            // If '-' then rotate to the left 
+            else if (char === '-') {
+                currentAngle += this.angle
             }
         }
         return this.segments

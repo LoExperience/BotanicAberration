@@ -34,13 +34,14 @@ const gui = new GUI()
 // scene.add(boxMesh)
 
 // Starting to generate a new tree
-const newTree = new LSystem('F', {'F': 'FF'}, 2, 1)
+const newTree = new LSystem('X', {'F': 'FF', 'X':'F+[[X]-X]-F[-FX]+X'}, 5, 0.1, 30)
 const treeString = newTree.applyRules()
 const treeSegments = newTree.generateTreePaths(treeString)
 treeSegments.forEach(element => {
-    const newSegment = new TreeSegment(element[0], element[1], 20, 0.5 , 8)
+    const newSegment = new TreeSegment(element[0], element[1], 20, 0.1 , 8)
     scene.add(newSegment.getMesh())
 });
+
 
 
 
