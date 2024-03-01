@@ -1,6 +1,5 @@
 // Testing L system on a 2D canvas
 
-
 /**
  * This function takes an starting state, rules to be applied
  * and number of times the rules should be applied. Returns an L-system string representation of a tree.
