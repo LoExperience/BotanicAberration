@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
+import TreeSegment from './Classes/TreeSegment'
 
 
 /**
@@ -21,41 +22,10 @@ const gui = new GUI()
 
 const v1 = new THREE.Vector3(5, 0, 5);
 const v2 = new THREE.Vector3(-5, 0, -5);
-const vControl = new THREE.Vector3(0, 5, 0);
-const curve = new THREE.QuadraticBezierCurve3( v1, vControl, v2);
-const v3Array = curve.getPoints(20);
-const geometry = new THREE.BufferGeometry();
-geometry.setFromPoints(v3Array);
-const points = new THREE.Points(geometry, new THREE.PointsMaterial({color: 0xff0000, size: 0.25 }));
-scene.add(points);
+const vControl = new THREE.Vector3(0, 0, 0);
 
-const tubeGeometry = new THREE.TubeGeometry(
-    curve,
-    20,
-    0.5,
-    8,
-    false
-)
-
-const tubeMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00})
-const tubeMesh = new THREE.Mesh(tubeGeometry, tubeMaterial)
-scene.add(tubeMesh)
-
-gui.add(vControl, 'y')
-    .min(0)
-    .max(10)
-    .step(0.1)
-    .name("Bezier Control")
-    .onFinishChange((value) => {
-        tubeMesh.geometry.dispose()
-        tubeMesh.geometry = new THREE.TubeGeometry(
-            curve,
-            20,
-            0.5,
-            8,
-            false
-        )
-    })
+const treeSegment = new TreeSegment(v1, v2, vControl, 20, 0.5 , 8)
+scene.add(treeSegment.getMesh())
 
 // Sizes
 const sizes = {
