@@ -43,9 +43,12 @@ export default class LSystem
                 newSegment.push(new THREE.Vector3(x, y, z))
 
                 // work out the ending point and add to the new segment
+                
                 const endX = x + this.baseLength * Math.cos(currentAngle * Math.PI / 180)
                 const endY = y + this.baseLength * Math.sin(currentAngle * Math.PI / 180)
                 const endZ = 0
+                console.log('endX: ', endX)
+                console.log(endZ)
                 newSegment.push(new THREE.Vector3(endX, endY, endZ))
 
                 //add the segment onto tree array

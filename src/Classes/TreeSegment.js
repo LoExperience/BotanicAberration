@@ -29,7 +29,9 @@ export default class TreeSegment
             this.radialSegments,
             false
         )
-        this.tubeMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00})  
+        this.tubeMaterial = new THREE.MeshBasicMaterial(
+            {color: 0x00ff00,
+            side: THREE.DoubleSide})  
         
         //create mesh
         this.tubeMesh = new THREE.Mesh(this.tubeGeometry, this.tubeMaterial)
