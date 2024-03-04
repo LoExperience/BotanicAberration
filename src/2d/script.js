@@ -43,6 +43,7 @@ function visualizeTree(lSystemString, canvasId, angle, branchLength) {
         if (char === 'F') {
             const endX = x + branchLength * Math.cos(currentAngle * Math.PI / 180)
             const endY = y - branchLength * Math.sin(currentAngle * Math.PI / 180)
+        
             ctx.lineTo(endX, endY)
             x = endX; // save new X co-ord for next character
             y = endY; // save new X co-ord for next character
@@ -82,10 +83,10 @@ const start = 'X'
 const test1 = {'X': 'F[+X][-X]FX', 'F': 'FF'}
 const test2 = {'F': 'FF', 'X':'F+[[X]-X]-F[-FX]+X'}
 const test3 = {'X': '-F'}
-const rules = test2
-const iterations = 5
-const angle = 10
-const branchLength = 5 // Adjust branch length
+const rules = test3
+const iterations = 1
+const angle = -90
+const branchLength = 50 // Adjust branch length
 
 const lsystemString = lSystem(start, rules, iterations)
 visualizeTree(lsystemString, 'treeCanvas', angle, branchLength)

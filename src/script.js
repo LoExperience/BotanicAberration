@@ -3,8 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
 import TreeSegment from './Classes/TreeSegment.js'
 import LSystem from './Classes/LSystem.js'
-
-
+import gsap from 'gsap'
 
 /**
  * Base
@@ -19,27 +18,16 @@ scene.add( new THREE.GridHelper(10, 10, 0x00ff00, 0x4a4a4a) );
 // Debug
 const gui = new GUI()
 
-
-// Test Branch
-// const v1 = new THREE.Vector3(5, 0, 5);
-// const v2 = new THREE.Vector3(-5, 0, -5);
-// const vControl = new THREE.Vector3(0, 0, 0);
-// const treeSegment = new TreeSegment(v1, v2,  20, 0.5 , 8)
-// scene.add(treeSegment.getMesh())
-
-// const boxGeo = new THREE.BoxGeometry(1,1,1)
-// const boxMat = new THREE.MeshBasicMaterial({color: 0x00ff00})
-// const boxMesh = new THREE.Mesh(boxGeo, boxMat)
-// boxMesh.rotateX(45)
-// scene.add(boxMesh)
-
 // Starting to generate a new tree
-const newTree = new LSystem('X', {'F': 'FF', 'X':'F+^[[X]&-X]&-F[&-FX]+^X'}, 3, 0.1, 40)
+const newTree = new LSystem('X', {'F': 'FF', 'X':'F+^[[X]&-X]&-/F[*&-*FX]+^X'}, 2, 0.5, 25)
 const treeString = newTree.applyRules()
 const treeSegments = newTree.generateTreePaths(treeString)
+let treeSegmentsMeshes = []
 treeSegments.forEach(element => {
-    const newSegment = new TreeSegment(element[0], element[1], 3, 0.01 , 3)
+    const newSegment = new TreeSegment(element[0], element[1], 5.0, 0.05, 10)
+    newSegment.getMesh().visible = false // hide mesh before animation
     scene.add(newSegment.getMesh())
+    treeSegmentsMeshes.push(newSegment)
 });
 
 
@@ -65,7 +53,7 @@ window.addEventListener('resize', () =>
 })
 
 // Camera
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
+const camera = new THREE.PerspectiveCamera(35, sizes.width / sizes.height, 0.1, 100)
 camera.position.z = 3
 scene.add(camera)
 
@@ -82,10 +70,37 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 // Animate
 const clock = new THREE.Clock()
+let time = Date.now()
+
+const animateSpeed = 0.05
+let timeline = gsap.timeline()
+timeline.pause()
+treeSegmentsMeshes.forEach(element => {
+        timeline.to(
+            element.tubeMaterial.uniforms.uProgress, 
+            {
+                duration: animateSpeed, 
+                value: 1.0, 
+                onStart: () => {element.getMesh().visible = true} // make each segment visible as the animation starts
+            }
+        )
+});
+
+//adding animation controls to debug panel
+let debugObj = {
+    stopAnimation: () => {timeline.pause()},
+    resumeAnimation: () => {timeline.resume()},
+    resetAnimation: () => {timeline.restart()}
+}
+gui.add(debugObj, 'stopAnimation')
+gui.add(debugObj, 'resumeAnimation')
+gui.add(debugObj, 'resetAnimation')
 
 const tick = () =>
 {
-    const elapsedTime = clock.getElapsedTime()
+    // const currentTime = Date.now()
+    // const deltaTime = (currentTime - time) / 100
+    // time = currentTime
 
     // Update controls
     controls.update()
