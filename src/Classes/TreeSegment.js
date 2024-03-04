@@ -85,7 +85,6 @@ export default class TreeSegment
     }
 
     getMidPoint(v1, v2){
-        console.log('midpointing')
         const midPoint = new THREE.Vector3().copy(v1)
         midPoint.add(v2)
         midPoint.multiplyScalar(0.5)
