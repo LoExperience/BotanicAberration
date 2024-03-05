@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GameManager from './Classes/GameManger.js'
+import LSystem from './Classes/LSystem.js'
 
 
 /**
@@ -12,14 +13,7 @@ const canvas = document.querySelector('canvas.webgl')
 // Scene
 const scene = new THREE.Scene()
 scene.add( new THREE.GridHelper(10, 10, 0x00ff00, 0x4a4a4a) );
-
-// Game Manager
-const gameManager = new GameManager(scene)
-gameManager.activateMenu()
-
-// Starting to generate a new tree
-gameManager.generateTree()
-gameManager.animateTree()
+window.scene = scene
 
 // Sizes
 const sizes = {
@@ -36,6 +30,7 @@ window.addEventListener('resize', () =>
     // Update camera
     camera.aspect = sizes.width / sizes.height
     camera.updateProjectionMatrix()
+    
 
     // Update renderer
     renderer.setSize(sizes.width, sizes.height)
@@ -46,6 +41,18 @@ window.addEventListener('resize', () =>
 const camera = new THREE.PerspectiveCamera(35, sizes.width / sizes.height, 0.1, 100)
 camera.position.z = 3
 scene.add(camera)
+window.camera = camera
+
+// Game Loop
+const gameManager = new GameManager()
+gameManager.activateMenu()
+
+// Starting to generate a new tree
+const newTree = new LSystem('X', {'F': 'FF', 'X':'F+^[[X]&-X]&-/F[*&-*FX]+^[X*]'}, 5, 0.5, 25)
+gameManager.generateTree(newTree, 0.07, 5)
+gameManager.animateTree()
+
+
 
 // Controls
 const controls = new OrbitControls(camera, canvas)

@@ -8,11 +8,11 @@ html,
 body
 {
     overflow: hidden;
-    margin: 0; /* Remove default margins */
-    display: flex; /* Center content flexbox */
+    margin: 0;
+    display: flex; 
     align-items: center;
     justify-content: center;
-    height: 100vh; /* Make body full viewport height */
+    height: 100vh; 
 }
 
 .webgl
@@ -24,46 +24,72 @@ body
 }
 
 .inventory-grid {
-    position: absolute; /* Position relative to the viewport */
-    bottom: 5%; /* Adjust from the bottom as needed  */
+    position: absolute; 
+    bottom: 10%; 
     left: 50%;
-    transform: translateX(-50%); /* Horizontal centering */
+    transform: translateX(-50%);
     width: 70%; 
     height: 10%;
     display: grid;
-    grid-template-columns: repeat(8, 1fr); /* 8 equal columns */
-    gap: 0px;  /* Adjust the gap between items */
+    grid-template-columns: repeat(8, 1fr); 
+    gap: 0px;  
   }
 
 .inventory-grid > div {
-    background-color: red; /* Set background color to red */
-    border-radius: 8px; /* Adjust the pixel value for corner rounding */
+    background-color: red; 
+    border-radius: 8px; 
     width: 10vh;
     height: 10vh;
 }
 
 .slot img {
     max-width: 100%; 
-    height: auto; 
+    height: auto;
+    transition: 0.1s;
 }
 
+.slot:hover img {
+    transform: scale(1.2);
 
-
-
+}
 
 .tooltip {
     position: absolute;
-    background-color: #333; /* Customize look as needed */
+    background-color: #333; 
     color: white;
     padding: 5px;
     border-radius: 5px;
-    visibility: hidden; /* Initially hidden */
-    opacity: 0;         /* Start fully transparent */
-    transition: opacity 0.3s; /* Add a fade-in effect */
+    visibility: hidden; 
+    opacity: 0; 
+    transition: opacity 0.3s; 
 }
 
 .slot:hover .tooltip {
     visibility: visible;
-    opacity: 1;  /* Show the tooltip on hover */
-    bottom: 110%; /* Position slightly below the slot */
+    opacity: 1;  
+    bottom: 200%; 
+    transform: scale(1.5);
+}
+
+.count {
+    position: absolute;
+    top: 10%;
+    transform: translate(-50%, -50%);  
+    font-size: 10px;
+    color: white; 
+    background-color: rgba(0, 255, 0, 0.75); 
+    padding: 3px;  
+    border-radius: 5px; 
+}
+
+
+.clear {
+    position: absolute;
+    top: 95%;
+    transform: translate(-50%, -50%);  
+    font-size: 10px;  
+    color: white;  
+    background-color: rgb(255, 0, 0, 0.75); 
+    padding: 3px;  
+    border-radius: 5px; 
 }
