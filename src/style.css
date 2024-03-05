@@ -8,6 +8,11 @@ html,
 body
 {
     overflow: hidden;
+    margin: 0; /* Remove default margins */
+    display: flex; /* Center content flexbox */
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Make body full viewport height */
 }
 
 .webgl
@@ -16,4 +21,49 @@ body
     top: 0;
     left: 0;
     outline: none;
+}
+
+.inventory-grid {
+    position: absolute; /* Position relative to the viewport */
+    bottom: 5%; /* Adjust from the bottom as needed  */
+    left: 50%;
+    transform: translateX(-50%); /* Horizontal centering */
+    width: 70%; 
+    height: 10%;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr); /* 8 equal columns */
+    gap: 0px;  /* Adjust the gap between items */
+  }
+
+.inventory-grid > div {
+    background-color: red; /* Set background color to red */
+    border-radius: 8px; /* Adjust the pixel value for corner rounding */
+    width: 10vh;
+    height: 10vh;
+}
+
+.slot img {
+    max-width: 100%; 
+    height: auto; 
+}
+
+
+
+
+
+.tooltip {
+    position: absolute;
+    background-color: #333; /* Customize look as needed */
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+    visibility: hidden; /* Initially hidden */
+    opacity: 0;         /* Start fully transparent */
+    transition: opacity 0.3s; /* Add a fade-in effect */
+}
+
+.slot:hover .tooltip {
+    visibility: visible;
+    opacity: 1;  /* Show the tooltip on hover */
+    bottom: 110%; /* Position slightly below the slot */
 }

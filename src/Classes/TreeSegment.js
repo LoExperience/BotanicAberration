@@ -11,7 +11,6 @@ export default class TreeSegment
         midPoint.add(this.end)
         midPoint.multiplyScalar(0.5)
 
-
         this.curveControlPoint = midPoint
         this.subDivision = subDivision
         this.radius = radius
