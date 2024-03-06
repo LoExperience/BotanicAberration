@@ -10,15 +10,15 @@ export default class GameManager
     {
         this.scene = window.scene
         this.camera = window.camera
-        this.score = 0.0
-        this.pointsToSpend = 0.0
+        this.pointsToSpend = 1000
         this.itemState
         this.startTrackingItems()
         this.treeSegmentsMeshes = []
         this.debugPanel = new GUI()
         this.branchSize = 0.0
         this.multiplier = 10.0
-        this.currentMusicTrack = null     
+        this.currentMusicTrack = null  
+        this.timeline   
     }
 
     // loads music
@@ -38,18 +38,23 @@ export default class GameManager
 
     // calculate score
     calculateScore(){
-        this.score = Math.round(this.treeSegmentsMeshes.length * this.branchSize * this.multiplier)
-        this.pointsToSpend += this.score
+        let score = 0
+        score = Math.round(this.treeSegmentsMeshes.length * this.branchSize * this.multiplier)
+        this.pointsToSpend += score
     }
 
     // start animation for the tree
     animateTree(){
         const animateSpeed = 0.05
-        let timeline = gsap.timeline({onComplete: () => {this.calculateScore()}})
-        timeline.timeScale(0.1)
-        timeline.pause()
+        this.timeline = gsap.timeline({onComplete: () => {
+            this.calculateScore() 
+            document.querySelector('.score').textContent = this.pointsToSpend
+        
+        }})
+        this.timeline.timeScale(0.1)
+        this.timeline.pause()
         this.treeSegmentsMeshes.forEach(element => {
-                timeline.to(
+                this.timeline.to(
                     element.tubeMaterial.uniforms.uProgress, 
                     {
                         duration: animateSpeed, 
@@ -61,19 +66,19 @@ export default class GameManager
         
         // Adding to debug panel
         this.debugAnimationObject = {
-            stopAnimation: () => {timeline.pause()},
+            stopAnimation: () => {this.timeline.pause()},
             playAnimation: () => {
-                timeline.resume()
+                this.timeline.resume()
                 if(this.currentMusicTrack) {this.setUpAudio(this.currentMusicTrack)}
             },
-            resetAnimation: () => {timeline.restart()},
+            resetAnimation: () => {this.timeline.restart()},
             animationSpeed: 1.00
         }
         this.debugPanel.add(this.debugAnimationObject, 'stopAnimation')
         this.debugPanel.add(this.debugAnimationObject, 'playAnimation')
         this.debugPanel.add(this.debugAnimationObject, 'resetAnimation')
         this.debugPanel.add(this.debugAnimationObject, 'animationSpeed').min(0).max(5.0).step(0.1).onFinishChange(
-            () => timeline.timeScale(this.debugAnimationObject.animationSpeed)
+            () => this.timeline.timeScale(this.debugAnimationObject.animationSpeed)
         )
     }
 
@@ -94,21 +99,42 @@ export default class GameManager
     
     // adds event listeners for each of the slot and act accordingly
     activateMenu(){
+        // Play button 
+        const playButton = document.querySelector('.play')
+        playButton.addEventListener(
+            'click', 
+            () => {
+                this.timeline.resume()
+                if(this.currentMusicTrack) {this.setUpAudio(this.currentMusicTrack)}
+            }
+        )
+
+
+        // Inventory system
         const slots = document.querySelectorAll('.slot') //get all slots
         let activeCount
         let clearButton
 
-        // behavior of inventory
         slots.forEach(slot => { //for each slot check if the state is locked before replacing image
             slot.addEventListener('click', (value) => {
                 const slotNumber = slot.classList[1]
                 if (this.itemState[slotNumber]['state'] == 'locked'){
-                    // unlock it and change image
-                    this.itemState[slotNumber]['state'] = 'unlocked'
-                    const imageElement = document.querySelector('.' + slotNumber).querySelector('img')
-                    const newImage = this.itemState[slotNumber]['image']
-                    imageElement.setAttribute('src', newImage)
 
+                    if(this.pointsToSpend >= this.itemState[slotNumber]['cost']){
+                        // deduct costs from points
+                        this.pointsToSpend -= this.itemState[slotNumber]['cost']
+                        document.querySelector('.score').textContent = this.pointsToSpend
+
+                        // unlock it and change image
+                        this.itemState[slotNumber]['state'] = 'unlocked'
+                        const imageElement = document.querySelector('.' + slotNumber).querySelector('img')
+                        const newImage = this.itemState[slotNumber]['image']
+                        imageElement.setAttribute('src', newImage)
+
+                        // change description once it has been unlocked
+                        const tooltipText = document.querySelector('.' + slotNumber).querySelector('span')
+                        tooltipText.textContent = this.itemState[slotNumber]['description']
+                    }
                 } else{ // it is unlocked
                     activeCount = document.querySelector('.' + slotNumber).querySelectorAll('span')[1]
                     clearButton = document.querySelector('.' + slotNumber).querySelectorAll('span')[2]
@@ -151,7 +177,6 @@ export default class GameManager
                         }
                     }
                 }
-                
             })
         })
 
@@ -171,14 +196,54 @@ export default class GameManager
     startTrackingItems()
     {
         this.itemState = {
-            slot_1: {image:'./sun.svg', state: 'locked'}, // CC BY 3.0 https://game-icons.net/1x1/delapouite/sunrise.html
-            slot_2: {image: './night.svg', state: 'locked'}, // CC BY 3.0 https://game-icons.net/1x1/delapouite/night-sleep.html
-            slot_3: {image: './classical.svg', state: 'locked'}, // CC BY 3.0 https://game-icons.net/1x1/delapouite/classical-knowledge.html
-            slot_4: {image: './jazz.svg', state: 'locked'}, // CC BY 3.0 https://game-icons.net/1x1/delapouite/saxophone.html
-            slot_5: {image: './spa.svg', state: 'locked'}, // CC BY 3.0 https://game-icons.net/1x1/lorc/meditation.html
-            slot_6: {image: './pollen.svg', state: 'locked'}, // CC BY 3.0 https://game-icons.net/1x1/lorc/pollen-dust.html
-            slot_7: {image: './poo.svg', state: 'locked'}, // CC BY 3.0 https://game-icons.net/1x1/lorc/turd.html
-            slot_8: {image: './booze.svg', state: 'locked'}, // CC BY 3.0 https://game-icons.net/1x1/lorc/martini.html
+            slot_1: {
+                image:'./sun.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/sunrise.html
+                state: 'locked',
+                cost: 10,
+                description: 'Discover the power of sunlight! [Free. Affects growth and color]'
+            },    
+            slot_2: {
+                image: './night.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/night-sleep.html
+                state: 'locked',
+                cost: 100,
+                description: 'Some plants thrive better in the moonlight [Free. Affects growth and color]'                
+            }, 
+            slot_3: {
+                image: './classical.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/classical-knowledge.html
+                state: 'locked',
+                cost: 20,
+                description: 'The soothing sound of pianos promotes harmony in growth [Free. Affects tree shape]'            
+            }, 
+            slot_4: {
+                image: './jazz.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/saxophone.html
+                state: 'locked',
+                cost: 20,
+                description: 'Jazz encourages more improvisation! [Free. Affects tree shape]'            
+            }, 
+            slot_5: {
+                image: './spa.svg', // CC BY 3.0 https://game-icons.net/1x1/lorc/meditation.html
+                state: 'locked',
+                cost: 20,
+                description: 'Do trees know how to enjoy spa music? [Free. Affects tree shape]'            
+            }, 
+            slot_6: {
+                image: './pollen.svg', // CC BY 3.0 https://game-icons.net/1x1/lorc/pollen-dust.html
+                state: 'locked',
+                cost: 20,
+                description: 'Pollen enables sexual reproduction! [20pt each. Affects fruiting]'            
+            }, 
+            slot_7: {
+                image: './poo.svg', // CC BY 3.0 https://game-icons.net/1x1/lorc/turd.html
+                state: 'locked',
+                cost: 20,
+                description: 'Plant food! Very smelly though... [20pt each. Affects growth]'            
+            }, 
+            slot_8: {
+                image: './booze.svg', // CC BY 3.0 https://game-icons.net/1x1/lorc/martini.html
+                state: 'locked',
+                cost: 20,
+                description: 'Humans love alcohol so why not plants?'            
+            }, 
             locked: './question.svg' // CC BY 3.0 https://game-icons.net/1x1/delapouite/perspective-dice-six-faces-random.html
         }
     }
