@@ -117,10 +117,15 @@ export default class GameManager
 
         slots.forEach(slot => { //for each slot check if the state is locked before replacing image
             slot.addEventListener('click', (value) => {
+
+                // id which slot is being pressed
                 const slotNumber = slot.classList[1]
+
+                // Locked behaviour
                 if (this.itemState[slotNumber]['state'] == 'locked'){
 
                     if(this.pointsToSpend >= this.itemState[slotNumber]['cost']){
+
                         // deduct costs from points
                         this.pointsToSpend -= this.itemState[slotNumber]['cost']
                         document.querySelector('.score').textContent = this.pointsToSpend
@@ -180,7 +185,7 @@ export default class GameManager
             })
         })
 
-        // behavior of clear buttons
+        // behaviour of clear buttons
         const clearButtons = document.querySelectorAll('.clear') //get all clear buttons
         clearButtons.forEach(button => { //for button check for clicks
             button.addEventListener('click', (event) => 
