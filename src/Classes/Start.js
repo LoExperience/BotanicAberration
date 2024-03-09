@@ -1,32 +1,38 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
-import { GroundProjectedSkybox } from 'three/addons/objects/GroundProjectedSkybox.js'
 import GUI from 'lil-gui'
-
+import Sun from './Sun.js'
+import Floor from './Floor.js'
 
 export default class Start{
 
     constructor()
     {
+        //set up scene and canvas
         this.canvas = document.querySelector('canvas.webgl')
         this.scene = this.setUpScene()
-        
+
+        //set up debug panel
+        this.debugPanel = new GUI()
+        this.setUpDebug()
+
+        //set up resizing
         this.sizes ={     
             width: window.innerWidth,
             height: window.innerHeight
         }
         this.setUpResize()
 
+        //set up camera & controls
         this.camera
         this.setUpCamera()
-
         this.controls = this.setUpConstrols()
 
+        //set up renderer
+        this.renderer
         this.startRenderer()
-        this.setUpEnvMap()
-
-        this.gui = new GUI()
+        this.setUpEnv()
+        
     }
 
     setUpScene(){
@@ -54,8 +60,10 @@ export default class Start{
     }
 
     setUpCamera(){
-        this.camera = new THREE.PerspectiveCamera(35, this.sizes.width / this.sizes.height, 0.1, 100)
+        this.camera = new THREE.PerspectiveCamera(75, this.sizes.width / this.sizes.height, 0.1, 500)
         this.camera .position.z = 3
+        this.camera .position.y = 2
+        this.camera.lookAt(this.scene.position)
         scene.add(this.camera )
         window.camera = this.camera 
     }
@@ -64,21 +72,52 @@ export default class Start{
         // Controls
         const controls = new OrbitControls(this.camera, this.canvas)
         controls.enableDamping = true
+        controls.enableRotate = false;  
         return controls
     }
 
     startRenderer(){
         this.renderer = new THREE.WebGLRenderer({
-            canvas: this.canvas
+            canvas: this.canvas,
+            powerPreference: "high-performance"
         })
+        
         this.renderer.setSize(this.sizes.width, this.sizes.height)
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-        
+        this.renderer.shadowMap.enabled = true
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+        this.renderer.shadowMap.autoUpdate = true
+        this.renderer.shadowMap.needsUpdate = true;
+
+
+        let cameraAngle = 0;
+        const clock = new THREE.Clock()
+        let oldElapsedTime = 0
+
         const tick = () =>
         {
-            // Update controls
+            // Delta time
+            const elapsedTime = clock.getElapsedTime()
+            const deltaTime = elapsedTime - oldElapsedTime
+            oldElapsedTime = elapsedTime
+
+            //Update Camera
+            if(window.lsystem){
+                //TODO
+            }
+            const radius = 3 // Example radius for circular camera path
+            const rotationSpeed = (1 * deltaTime) * 0.2 // Adjust for desired rotation speed
+            const center = new THREE.Vector3(0, 0, 0) // Center point to orbit around
+          
+            // Update in animation loop
+            cameraAngle += rotationSpeed;
+            const cameraX = center.x + radius * Math.cos(cameraAngle);
+            const cameraZ = center.z + radius * Math.sin(cameraAngle);
+
+            this.camera.position.set(cameraX, this.camera.position.y, cameraZ);
+            this.camera.lookAt(center);
             this.controls.update()
-        
+
             // Render
             this.renderer.render(this.scene, this.camera)
         
@@ -89,61 +128,41 @@ export default class Start{
         tick()
     }
 
-    setUpEnvMap(){
-        // Ground projected skybox
-        const rgbeLoader = new RGBELoader()
-
-        rgbeLoader.load('/textures/environment/kloofendal_48d_partly_cloudy_puresky_1k_modified.hdr', (environmentMap) =>
-        {
-            environmentMap.mapping = THREE.EquirectangularReflectionMapping
-            const skybox = new GroundProjectedSkybox(environmentMap)
-            skybox.radius = 31.2
-            skybox.height = 0
-            skybox.scale.setScalar(50)
-            this.scene.add(skybox)
-        })
-
-
+    setUpEnv(){
         // floor
-        const textureLoader = new THREE.TextureLoader()
-
-        const floorColorTexture = textureLoader.load('textures/ground/dirt/color.jpg')
-        floorColorTexture.colorSpace = THREE.SRGBColorSpace
-        floorColorTexture.repeat.set(50.0, 50.0)
-        floorColorTexture.wrapS = THREE.RepeatWrapping
-        floorColorTexture.wrapT = THREE.RepeatWrapping
-
-        const floorNormalTexture = textureLoader.load('textures/ground/dirt/normal.jpg')
-        floorNormalTexture.repeat.set(50.0, 50.0)
-        floorNormalTexture.wrapS = THREE.RepeatWrapping
-        floorNormalTexture.wrapT = THREE.RepeatWrapping
-        
-        const floorGeometry = new THREE.CircleGeometry(20, 64)
-        const floorMaterial = new THREE.MeshStandardMaterial({
-            map: floorColorTexture,
-            normalMap: floorNormalTexture
-        })
-        const floor = new THREE.Mesh(floorGeometry, floorMaterial)
-        floor.rotation.x = - Math.PI * 0.5
-        scene.add(floor)
+        const floor = new Floor()
 
 
         // Lights
 
-        const directionalLight = new THREE.DirectionalLight('#ffffff', 4)
+        // Directional Light
+        const directionalLight = new THREE.DirectionalLight('#ffffff', 0)
         directionalLight.castShadow = true
         directionalLight.shadow.camera.far = 15
         directionalLight.shadow.mapSize.set(1024, 1024)
         directionalLight.shadow.normalBias = 0.05
         directionalLight.position.set(3.5, 2, - 1.25)
-        scene.add(directionalLight)
 
-        // const newGUI = new GUI()
-        // newGUI.add(directionalLight, 'intensity').min(0).max(10).step(0.001).name('lightIntensity')
-        // newGUI.add(directionalLight.position, 'x').min(- 5).max(5).step(0.001).name('lightX')
-        // newGUI.add(directionalLight.position, 'y').min(- 5).max(5).step(0.001).name('lightY')
-        // newGUI.add(directionalLight.position, 'z').min(- 5).max(5).step(0.001).name('lightZ')
+        const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 1, 0xFFFFFF)
+        this.scene.add(directionalLight, directionalLightHelper)
+
+        const debugLights = this.debugPanel.addFolder('Lights')
+        debugLights.add(directionalLight, 'intensity').min(0).max(10).step(0.001).name('dir intensity')
+        debugLights.add(directionalLight.position, 'x').min(- 5).max(5).step(0.001).name('dir pos x')
+        debugLights.add(directionalLight.position, 'y').min(- 5).max(5).step(0.001).name('dir pos y')
+        debugLights.add(directionalLight.position, 'z').min(- 5).max(5).step(0.001).name('dir pos z')
+
+        // Ambient Light
+        const ambientLight = new THREE.AmbientLight(0xFFFFFF, 2.0)
+        this.scene.add(ambientLight)
+        debugLights.add(ambientLight, 'intensity').min(0).max(15).step(0.1).name('ambient intensity')
+
+        let sun = new Sun()
 
 
+    }
+
+    setUpDebug(){
+        window.debugPanel = this.debugPanel
     }
 }

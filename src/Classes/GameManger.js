@@ -14,7 +14,7 @@ export default class GameManager
         this.itemState
         this.startTrackingItems()
         this.treeSegmentsMeshes = []
-        this.debugPanel = new GUI()
+        this.debugPanel = window.debugPanel
         this.branchSize = 0.0
         this.multiplier = 10.0
         this.currentMusicTrack = null  
@@ -74,12 +74,16 @@ export default class GameManager
             resetAnimation: () => {this.timeline.restart()},
             animationSpeed: 1.00
         }
-        this.debugPanel.add(this.debugAnimationObject, 'stopAnimation')
-        this.debugPanel.add(this.debugAnimationObject, 'playAnimation')
-        this.debugPanel.add(this.debugAnimationObject, 'resetAnimation')
-        this.debugPanel.add(this.debugAnimationObject, 'animationSpeed').min(0).max(5.0).step(0.1).onFinishChange(
+
+        const debugAnimation = this.debugPanel.addFolder('Animations')
+        debugAnimation.add(this.debugAnimationObject, 'stopAnimation')
+        debugAnimation.add(this.debugAnimationObject, 'playAnimation')
+        debugAnimation.add(this.debugAnimationObject, 'resetAnimation')
+        debugAnimation.add(this.debugAnimationObject, 'animationSpeed').min(0).max(5.0).step(0.1).onFinishChange(
             () => this.timeline.timeScale(this.debugAnimationObject.animationSpeed)
         )
+
+        return this.timeline
     }
 
     // generate a tree based on rules defined by user items

@@ -94,7 +94,7 @@ body
   }
 
 .inventory-grid > div {
-    background-color: red; 
+    background-color: none; 
     border-radius: 8px; 
     width: 10vh;
     height: 10vh;
