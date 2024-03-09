@@ -10,9 +10,6 @@ export default class LSystem
         this.angle = angle
         this.segments = []
         this.startingLength = 1
-        this.maxX = 0 
-        this.maxY = 0
-        this.maxZ = 0
     }
 
     // returns an L system string after applying all the rules
@@ -60,10 +57,6 @@ export default class LSystem
                 x = end.x 
                 y = end.y
                 z = end.z
-
-                this.maxX = Math.max(this.maxX, Math.abs(end.x))
-                this.maxY = Math.max(this.maxY, Math.abs(end.y))
-                this.maxZ = Math.max(this.maxZ, Math.abs(end.z))
             }    
              
             // Represents a branching point. Save current state to return to later

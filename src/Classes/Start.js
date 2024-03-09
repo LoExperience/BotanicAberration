@@ -60,7 +60,7 @@ export default class Start{
     }
 
     setUpCamera(){
-        this.camera = new THREE.PerspectiveCamera(75, this.sizes.width / this.sizes.height, 0.1, 500)
+        this.camera = new THREE.PerspectiveCamera(35, this.sizes.width / this.sizes.height, 0.1, 500)
         this.camera .position.z = 3
         this.camera .position.y = 2
         this.camera.lookAt(this.scene.position)
@@ -72,7 +72,7 @@ export default class Start{
         // Controls
         const controls = new OrbitControls(this.camera, this.canvas)
         controls.enableDamping = true
-        controls.enableRotate = false;  
+        // controls.enableRotate = false;  
         return controls
     }
 
@@ -101,21 +101,23 @@ export default class Start{
             const deltaTime = elapsedTime - oldElapsedTime
             oldElapsedTime = elapsedTime
 
-            //Update Camera
-            if(window.lsystem){
-                //TODO
+            //Update Camera            
+            let radius = 4
+            let rotationSpeed = (1 * deltaTime) * 0.2 
+            let center = new THREE.Vector3(0, 2, 0) 
+
+            if (window.topSegment){
+                radius = Math.max(Math.max(Math.abs(window.topSegment.x), Math.abs(window.topSegment.z)) * 10, 3)
+                rotationSpeed = (1 * deltaTime) * 0.2
+                center.y += Math.max(Math.abs(window.topSegment.y * 1.75), 3)
             }
-            const radius = 3 // Example radius for circular camera path
-            const rotationSpeed = (1 * deltaTime) * 0.2 // Adjust for desired rotation speed
-            const center = new THREE.Vector3(0, 0, 0) // Center point to orbit around
-          
+
             // Update in animation loop
             cameraAngle += rotationSpeed;
-            const cameraX = center.x + radius * Math.cos(cameraAngle);
-            const cameraZ = center.z + radius * Math.sin(cameraAngle);
-
-            this.camera.position.set(cameraX, this.camera.position.y, cameraZ);
-            this.camera.lookAt(center);
+            const cameraX = THREE.MathUtils.lerp(this.camera.position.x, center.x + radius * Math.cos(cameraAngle), 0.05)
+            const cameraZ = THREE.MathUtils.lerp(this.camera.position.z, center.z + radius * Math.sin(cameraAngle), 0.05)
+            const cameraY = THREE.MathUtils.lerp(this.camera.position.y, center.y, 0.05)
+            this.camera.position.set(cameraX, cameraY, cameraZ);
             this.controls.update()
 
             // Render

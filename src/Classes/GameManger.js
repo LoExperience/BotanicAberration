@@ -18,7 +18,8 @@ export default class GameManager
         this.branchSize = 0.0
         this.multiplier = 10.0
         this.currentMusicTrack = null  
-        this.timeline   
+        this.timeline
+        this.max = new THREE.Vector3(0, 0, 0)
     }
 
     // loads music
@@ -59,7 +60,15 @@ export default class GameManager
                     {
                         duration: animateSpeed, 
                         value: 1.0, 
-                        onStart: () => {element.getMesh().visible = true} // make each segment visible as the animation starts
+                        onStart: () => {
+                            this.max = new THREE.Vector3(
+                                Math.max(this.max.x, Math.abs(element.end.x)),
+                                Math.max(this.max.y, Math.abs(element.end.y)),
+                                Math.max(this.max.z, Math.abs(element.end.z))
+                            )
+                            window.topSegment = this.max
+                            element.getMesh().visible = true
+                        }, // make each segment visible as the animation starts
                     }
                 )
         })
