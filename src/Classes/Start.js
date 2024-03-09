@@ -107,9 +107,9 @@ export default class Start{
             let center = new THREE.Vector3(0, 2, 0) 
 
             if (window.topSegment){
-                radius = Math.max(Math.max(Math.abs(window.topSegment.x), Math.abs(window.topSegment.z)) * 10, 3)
+                radius = Math.max(Math.max(Math.abs(window.topSegment.x), Math.abs(window.topSegment.z)) * 11, 3)
                 rotationSpeed = (1 * deltaTime) * 0.2
-                center.y += Math.max(Math.abs(window.topSegment.y * 1.75), 3)
+                center.y += Math.max(Math.abs(window.topSegment.y * 1), 3)
             }
 
             // Update in animation loop
