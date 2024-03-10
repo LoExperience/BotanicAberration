@@ -2,14 +2,15 @@ import * as THREE from 'three'
 
 export default class LSystem
 {
-    constructor(start, rules, iterations, baseLength, angle){
+    constructor(start, rules, iterations, baseLength, angle, pooAmount){
         this.start = start
         this.rules = rules
         this.iterations = iterations
-        this.baseLength = baseLength
         this.angle = angle
         this.segments = []
         this.startingLength = 1
+        this.pooAmount = pooAmount
+        this.baseLength = baseLength * (1 + (this.pooAmount/10))
     }
 
     // returns an L system string after applying all the rules
@@ -56,7 +57,7 @@ export default class LSystem
                 // save the state for next character
                 x = end.x 
                 y = end.y
-                z = end.z
+                z = end.z 
             }    
              
             // Represents a branching point. Save current state to return to later

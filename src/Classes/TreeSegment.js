@@ -2,14 +2,21 @@ import * as THREE from 'three'
 
 export default class TreeSegment
 {
-    constructor(start, end, subDivision, radius, radialSegments){
+    constructor(start, end, subDivision, radius, radialSegments, drunkness){
         // setting params as attributes
         this.start = start
         this.end = end
+        this.drunkness = drunkness
 
         const midPoint = new THREE.Vector3().copy(this.start)
         midPoint.add(this.end)
         midPoint.multiplyScalar(0.5)
+        
+        const drunkModifier = new THREE.Vector3(
+            Math.random() * (0.2 * (this.drunkness) / 7),
+            0, 
+            Math.random() * (0.2 * (this.drunkness) / 7))
+        midPoint.add(drunkModifier)
 
         this.curveControlPoint = midPoint
         this.subDivision = subDivision

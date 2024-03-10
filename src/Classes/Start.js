@@ -37,7 +37,8 @@ export default class Start{
 
     setUpScene(){
         const scene = new THREE.Scene()
-        scene.add( new THREE.GridHelper(10, 10, 0x00ff00, 0x4a4a4a) );
+        // scene.add( new THREE.GridHelper(10, 10, 0x00ff00, 0x4a4a4a) );
+        scene.background = new THREE.Color(0x000000);
         window.scene = scene
         return scene
     }
@@ -79,7 +80,8 @@ export default class Start{
     startRenderer(){
         this.renderer = new THREE.WebGLRenderer({
             canvas: this.canvas,
-            powerPreference: "high-performance"
+            powerPreference: "high-performance",
+            apha: true
         })
         
         this.renderer.setSize(this.sizes.width, this.sizes.height)
@@ -122,6 +124,21 @@ export default class Start{
             this.controls.target.set(0, (cameraY * 0.4) , 0)
             this.controls.update()
 
+            // update sun position
+
+            if(window.sun && window.topSegment ){
+                window.sun.sun.position.x = THREE.MathUtils.lerp(window.sun.sun.position.x, Math.abs(window.topSegment.x) + 1 , 0.01)
+                window.sun.sun.position.y = THREE.MathUtils.lerp(window.sun.sun.position.y, window.topSegment.y - 1, 0.01)
+                window.sun.sun.position.z = THREE.MathUtils.lerp(window.sun.sun.position.z, Math.abs(window.topSegment.z) + 1, 0.01)
+            }
+
+            //update moon position
+            if(window.moon && window.topSegment ){
+                window.moon.moon.position.x = THREE.MathUtils.lerp(window.moon.moon.position.x, Math.abs(window.topSegment.x) + 1 , 0.01)
+                window.moon.moon.position.y = THREE.MathUtils.lerp(window.moon.moon.position.y, window.topSegment.y - 1, 0.01)
+                window.moon.moon.position.z = THREE.MathUtils.lerp(window.moon.moon.position.z, Math.abs(window.topSegment.z) + 1, 0.01)
+            }
+
             // Render
             this.renderer.render(this.scene, this.camera)
         
@@ -136,33 +153,12 @@ export default class Start{
         // floor
         const floor = new Floor()
 
-
         // Lights
 
-        // Directional Light
-        const directionalLight = new THREE.DirectionalLight('#ffffff', 0)
-        directionalLight.castShadow = true
-        directionalLight.shadow.camera.far = 15
-        directionalLight.shadow.mapSize.set(1024, 1024)
-        directionalLight.shadow.normalBias = 0.05
-        directionalLight.position.set(3.5, 2, - 1.25)
-
-        const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 1, 0xFFFFFF)
-        this.scene.add(directionalLight, directionalLightHelper)
-
-        const debugLights = this.debugPanel.addFolder('Lights')
-        debugLights.add(directionalLight, 'intensity').min(0).max(10).step(0.001).name('dir intensity')
-        debugLights.add(directionalLight.position, 'x').min(- 5).max(5).step(0.001).name('dir pos x')
-        debugLights.add(directionalLight.position, 'y').min(- 5).max(5).step(0.001).name('dir pos y')
-        debugLights.add(directionalLight.position, 'z').min(- 5).max(5).step(0.001).name('dir pos z')
-
         // Ambient Light
-        const ambientLight = new THREE.AmbientLight(0xFFFFFF, 2.0)
+        const ambientLight = new THREE.AmbientLight(0xFFFFFF, 1.0)
         this.scene.add(ambientLight)
-        debugLights.add(ambientLight, 'intensity').min(0).max(15).step(0.1).name('ambient intensity')
-
-        let sun = new Sun()
-
+        this.debugPanel.add(ambientLight, 'intensity').min(0).max(15).step(0.1).name('ambient intensity')
 
     }
 

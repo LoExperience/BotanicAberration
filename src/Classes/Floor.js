@@ -16,12 +16,12 @@ export default class Sun{
 
         const floorColorTexture = textureLoader.load('textures/ground/dirt/color.jpg')
         floorColorTexture.colorSpace = THREE.SRGBColorSpace
-        floorColorTexture.repeat.set(5.0, 5.0)
+        floorColorTexture.repeat.set(1.0, 1.0)
         floorColorTexture.wrapS = THREE.RepeatWrapping
         floorColorTexture.wrapT = THREE.RepeatWrapping
 
         const floorNormalTexture = textureLoader.load('textures/ground/dirt/normal.jpg')
-        floorNormalTexture.repeat.set(5.0, 5.0)
+        floorNormalTexture.repeat.set(1.0, 1.0)
         floorNormalTexture.wrapS = THREE.RepeatWrapping
         floorNormalTexture.wrapT = THREE.RepeatWrapping
         

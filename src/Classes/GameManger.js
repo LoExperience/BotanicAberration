@@ -1,8 +1,9 @@
 import TreeSegment from "./TreeSegment.js"
 import LSystem from "./LSystem.js"
 import gsap from "gsap"
-import GUI from 'lil-gui'
 import * as THREE from 'three'
+import Sun from "./Sun.js"
+import Moon from "./Moon.js"
 
 export default class GameManager
 {
@@ -17,9 +18,15 @@ export default class GameManager
         this.debugPanel = window.debugPanel
         this.branchSize = 0.0
         this.multiplier = 10.0
+        this.drunkness = 0.0
+        this.poo = 0.0
+        this.pollen = 0.0
         this.currentMusicTrack = null  
         this.timeline
         this.max = new THREE.Vector3(0, 0, 0)
+        this.sun
+        this.moon
+        this.playing = false
     }
 
     // loads music
@@ -42,6 +49,7 @@ export default class GameManager
         let score = 0
         score = Math.round(this.treeSegmentsMeshes.length * this.branchSize * this.multiplier)
         this.pointsToSpend += score
+        this.playing = false
     }
 
     // start animation for the tree
@@ -50,7 +58,7 @@ export default class GameManager
         this.timeline = gsap.timeline({onComplete: () => {
             this.calculateScore() 
             document.querySelector('.score').textContent = this.pointsToSpend
-        
+            this.playing = false
         }})
         this.timeline.timeScale(0.1)
         this.timeline.pause()
@@ -74,35 +82,35 @@ export default class GameManager
         })
         
         // Adding to debug panel
-        this.debugAnimationObject = {
-            stopAnimation: () => {this.timeline.pause()},
-            playAnimation: () => {
-                this.timeline.resume()
-                if(this.currentMusicTrack) {this.setUpAudio(this.currentMusicTrack)}
-            },
-            resetAnimation: () => {this.timeline.restart()},
-            animationSpeed: 1.00
-        }
+        // this.debugAnimationObject = {
+        //     stopAnimation: () => {this.timeline.pause()},
+        //     playAnimation: () => {
+        //         this.timeline.resume()
+        //         if(this.currentMusicTrack) {this.setUpAudio(this.currentMusicTrack)}
+        //     },
+        //     resetAnimation: () => {this.timeline.restart()},
+        //     animationSpeed: 1.00
+        // }
 
-        const debugAnimation = this.debugPanel.addFolder('Animations')
-        debugAnimation.add(this.debugAnimationObject, 'stopAnimation')
-        debugAnimation.add(this.debugAnimationObject, 'playAnimation')
-        debugAnimation.add(this.debugAnimationObject, 'resetAnimation')
-        debugAnimation.add(this.debugAnimationObject, 'animationSpeed').min(0).max(5.0).step(0.1).onFinishChange(
-            () => this.timeline.timeScale(this.debugAnimationObject.animationSpeed)
-        )
+        // const debugAnimation = this.debugPanel.addFolder('Animations')
+        // debugAnimation.add(this.debugAnimationObject, 'stopAnimation')
+        // debugAnimation.add(this.debugAnimationObject, 'playAnimation')
+        // debugAnimation.add(this.debugAnimationObject, 'resetAnimation')
+        // debugAnimation.add(this.debugAnimationObject, 'animationSpeed').min(0).max(5.0).step(0.1).onFinishChange(
+        //     () => this.timeline.timeScale(this.debugAnimationObject.animationSpeed)
+        // )
 
         return this.timeline
     }
 
     // generate a tree based on rules defined by user items
-    generateTree(lSystem, branchSize, branchDimensions){
+    generateTree(lSystem, branchSize, branchDimensions, drunkness){
         this.branchSize = branchSize
         const newTree = lSystem
         const treeString = newTree.applyRules()
         const treeSegments = newTree.generateTreePaths(treeString)
         treeSegments.forEach(element => {
-            const newSegment = new TreeSegment(element[0], element[1], 5.0, branchSize, branchDimensions)
+            const newSegment = new TreeSegment(element[0], element[1], 10.0, branchSize, branchDimensions, drunkness)
             newSegment.getMesh().visible = false // hide mesh before animation
             this.scene.add(newSegment.getMesh())
             this.treeSegmentsMeshes.push(newSegment)
@@ -112,86 +120,120 @@ export default class GameManager
     
     // adds event listeners for each of the slot and act accordingly
     activateMenu(){
-        // Play button 
+        // Play button
+
         const playButton = document.querySelector('.play')
         playButton.addEventListener(
             'click', 
             () => {
-                this.timeline.resume()
-                if(this.currentMusicTrack) {this.setUpAudio(this.currentMusicTrack)}
-            }
-        )
+                if(!this.playing){
+                        // lock ui
+                        this.playing = true
 
+                        // set music base on ui selection
+                        if(this.currentMusicTrack) {this.setUpAudio(this.currentMusicTrack)}
+
+                        // generate lsystem based on ui selection
+                        const newTree = new LSystem('X', {'F': 'FFF', 'X':'F*X+^[[X]&-X]&-/F[*&-*FX]+^[X*]'}, 3, 0.25, 25, this.poo)
+
+                        // generate tree based on lsystem
+                        this.generateTree(newTree, 0.07, 5, this.drunkness)
+
+                        // play animation 
+                        this.animateTree()
+                        this.timeline.resume()
+
+                    }
+                }
+        )
 
         // Inventory system
         const slots = document.querySelectorAll('.slot') //get all slots
         let activeCount
         let clearButton
-
+        
         slots.forEach(slot => { //for each slot check if the state is locked before replacing image
             slot.addEventListener('click', (value) => {
+                if(!this.playing){
+                    // id which slot is being pressed
+                    const slotNumber = slot.classList[1]
 
-                // id which slot is being pressed
-                const slotNumber = slot.classList[1]
+                    // Locked behaviour
+                    if (this.itemState[slotNumber]['state'] == 'locked'){
 
-                // Locked behaviour
-                if (this.itemState[slotNumber]['state'] == 'locked'){
+                        if(this.pointsToSpend >= this.itemState[slotNumber]['cost']){
 
-                    if(this.pointsToSpend >= this.itemState[slotNumber]['cost']){
+                            // deduct costs from points
+                            this.pointsToSpend -= this.itemState[slotNumber]['cost']
+                            document.querySelector('.score').textContent = this.pointsToSpend
 
-                        // deduct costs from points
-                        this.pointsToSpend -= this.itemState[slotNumber]['cost']
-                        document.querySelector('.score').textContent = this.pointsToSpend
+                            // unlock it and change image
+                            this.itemState[slotNumber]['state'] = 'unlocked'
+                            const imageElement = document.querySelector('.' + slotNumber).querySelector('img')
+                            const newImage = this.itemState[slotNumber]['image']
+                            imageElement.setAttribute('src', newImage)
 
-                        // unlock it and change image
-                        this.itemState[slotNumber]['state'] = 'unlocked'
-                        const imageElement = document.querySelector('.' + slotNumber).querySelector('img')
-                        const newImage = this.itemState[slotNumber]['image']
-                        imageElement.setAttribute('src', newImage)
-
-                        // change description once it has been unlocked
-                        const tooltipText = document.querySelector('.' + slotNumber).querySelector('span')
-                        tooltipText.textContent = this.itemState[slotNumber]['description']
-                    }
-                } else{ // it is unlocked
-                    activeCount = document.querySelector('.' + slotNumber).querySelectorAll('span')[1]
-                    clearButton = document.querySelector('.' + slotNumber).querySelectorAll('span')[2]
-
-                    if(['slot_1', 'slot_2'].includes(slotNumber)){
-                        if(activeCount.textContent === ''){
-                            document.querySelector('.slot_1').querySelectorAll('span')[1].textContent = ''
-                            document.querySelector('.slot_2').querySelectorAll('span')[1].textContent = ''
-                            activeCount.removeAttribute('hidden')
-                            activeCount.textContent = 'ON'
-                        } else {
-                            activeCount.setAttribute('hidden', true)
-                            activeCount.textContent = ''
+                            // change description once it has been unlocked
+                            const tooltipText = document.querySelector('.' + slotNumber).querySelector('span')
+                            tooltipText.textContent = this.itemState[slotNumber]['description']
                         }
-                    }
-                    else if(['slot_3', 'slot_4', 'slot_5'].includes(slotNumber)){
-                        if(activeCount.textContent === ''){
-                            document.querySelector('.slot_3').querySelectorAll('span')[1].textContent = ''
-                            document.querySelector('.slot_4').querySelectorAll('span')[1].textContent = ''
-                            document.querySelector('.slot_5').querySelectorAll('span')[1].textContent = ''
-                            activeCount.removeAttribute('hidden')
-                            activeCount.textContent = 'ON'
-                            slotNumber == 'slot_3' ? this.currentMusicTrack = this.getMusic('classical') : null
-                            slotNumber == 'slot_4' ? this.currentMusicTrack = this.getMusic('jazz') : null
-                            slotNumber == 'slot_5' ? this.currentMusicTrack = this.getMusic('spa') : null
+                    } else{ // it is unlocked
+                        activeCount = document.querySelector('.' + slotNumber).querySelectorAll('span')[1]
+                        clearButton = document.querySelector('.' + slotNumber).querySelectorAll('span')[2]
 
-                        } else {
-                            activeCount.setAttribute('hidden', true)
-                            this.currentMusicTrack = null
-                            activeCount.textContent = ''
+                        if(['slot_1', 'slot_2'].includes(slotNumber)){
+                            if(activeCount.textContent === ''){
+                                document.querySelector('.slot_1').querySelectorAll('span')[1].textContent = ''
+                                document.querySelector('.slot_2').querySelectorAll('span')[1].textContent = ''
+                                activeCount.removeAttribute('hidden')
+                                activeCount.textContent = 'ON'
+                                if(slotNumber == 'slot_1'){
+                                    this.sun = new Sun()
+                                    window.sun = this.sun
+                                }else{
+                                    this.moon = new Moon()
+                                    window.moon = this.moon
+                                }
+                            } else {
+                                if (slotNumber == 'slot_1'){
+                                    activeCount.setAttribute('hidden', true)
+                                    activeCount.textContent = ''
+                                    this.sun.destroy()
+                                }else{
+                                    activeCount.setAttribute('hidden', true)
+                                    activeCount.textContent = ''
+                                    this.moon.destroy()
+                                }
+                            }
                         }
-                    }
-                    else{
-                        if(activeCount.textContent === ''){
-                            activeCount.textContent = 1
-                            activeCount.removeAttribute('hidden')
-                            clearButton.removeAttribute('hidden')
-                        } else{
-                            activeCount.textContent = Number(activeCount.textContent) + 1
+                        else if(['slot_3', 'slot_4', 'slot_5'].includes(slotNumber)){
+                            if(activeCount.textContent === ''){
+                                document.querySelector('.slot_3').querySelectorAll('span')[1].textContent = ''
+                                document.querySelector('.slot_4').querySelectorAll('span')[1].textContent = ''
+                                document.querySelector('.slot_5').querySelectorAll('span')[1].textContent = ''
+                                activeCount.removeAttribute('hidden')
+                                activeCount.textContent = 'ON'
+                                slotNumber == 'slot_3' ? this.currentMusicTrack = this.getMusic('classical') : null
+                                slotNumber == 'slot_4' ? this.currentMusicTrack = this.getMusic('jazz') : null
+                                slotNumber == 'slot_5' ? this.currentMusicTrack = this.getMusic('spa') : null
+
+                            } else {
+                                activeCount.setAttribute('hidden', true)
+                                this.currentMusicTrack = null
+                                activeCount.textContent = ''
+                            }
+                        }
+                        else{
+                            if(activeCount.textContent === ''){
+                                activeCount.textContent = 1
+                                activeCount.removeAttribute('hidden')
+                                clearButton.removeAttribute('hidden')
+                            } else{
+                                activeCount.textContent = Number(activeCount.textContent) + 1
+                                if(slotNumber == 'slot_6'){this.pollen = activeCount.textContent}
+                                if(slotNumber == 'slot_7'){this.poo = activeCount.textContent}
+                                if(slotNumber == 'slot_8'){this.drunkness = activeCount.textContent}
+                            }
                         }
                     }
                 }
@@ -203,10 +245,17 @@ export default class GameManager
         clearButtons.forEach(button => { //for button check for clicks
             button.addEventListener('click', (event) => 
             {
-                event.stopPropagation() // stops triggering the event listener on the div
-                clearButton.setAttribute('hidden', true)
-                activeCount.setAttribute('hidden', true)
-                activeCount.textContent = ''
+                // lock ui if playing
+                if(!this.playing){
+                    const slotNumber = activeCount.parentElement.classList[1]
+                    event.stopPropagation() // stops triggering the event listener on the div
+                    clearButton.setAttribute('hidden', true)
+                    activeCount.setAttribute('hidden', true)
+                    activeCount.textContent = ''
+                    if(slotNumber == 'slot_6'){this.pollen = 0}
+                    if(slotNumber == 'slot_7'){this.poo = 0}
+                    if(slotNumber == 'slot_8'){this.drunkness = 0}
+                }
             })
         })
     }

@@ -2,12 +2,12 @@ import * as THREE from 'three'
 import gsap from 'gsap'
 
 
-export default class Sun{
+export default class Moon{
 
     constructor(){
 
         this.scene = window.scene
-        this.sun
+        this.moon
         this.spawn()
         this.directionalLight
         this.directionalLightHelper
@@ -16,19 +16,19 @@ export default class Sun{
     spawn(){
         // load matcap
         const textureLoader = new THREE.TextureLoader()
-        const sunTexture1 = textureLoader.load('./textures/matcap/sun1.png') // by E.J. Hassenfratz at https://eyedesyn.gumroad.com/l/mgeiu?_gl=1*17w7ivw*_ga*MTU2NTExODkzOS4xNzA5NzEyMzYx*_ga_6LJN6D94N6*MTcxMDA5NzI3MC40LjAuMTcxMDA5NzI3MC4wLjAuMA..
-        sunTexture1.colorSpace = THREE.SRGBColorSpace
+        const moonTexture1 = textureLoader.load('./textures/matcap/moon1.png') // by E.J. Hassenfratz at https://eyedesyn.gumroad.com/l/mgeiu?_gl=1*17w7ivw*_ga*MTU2NTExODkzOS4xNzA5NzEyMzYx*_ga_6LJN6D94N6*MTcxMDA5NzI3MC40LjAuMTcxMDA5NzI3MC4wLjAuMA..
+        moonTexture1.colorSpace = THREE.SRGBColorSpace
 
         // create mesh
-        const sunGeo = new THREE.IcosahedronGeometry(0.5, 5)
-        const sunMat = new THREE.MeshMatcapMaterial({matcap: sunTexture1, transparent: true, opacity: 0})
-        const sunMesh = new THREE.Mesh(sunGeo, sunMat)
-        sunMesh.position.set(2,2,2)
-        this.sun = sunMesh
-        this.scene.add(this.sun)
+        const moonGeo = new THREE.IcosahedronGeometry(0.5, 5)
+        const moonMat = new THREE.MeshMatcapMaterial({matcap: moonTexture1, transparent: true, opacity: 0})
+        const moonMesh = new THREE.Mesh(moonGeo, moonMat)
+        moonMesh.position.set(2,2,2)
+        this.moon = moonMesh
+        this.scene.add(this.moon)
 
-        // create sunlight as directional light
-        const directionalLight = new THREE.DirectionalLight('#ffdd40', 0)
+        // create moonlight as directional light
+        const directionalLight = new THREE.DirectionalLight('#d4d4d4', 0)
         directionalLight.castShadow = true
         directionalLight.shadow.camera.far = 15
         directionalLight.shadow.mapSize.set(1024, 1024)
@@ -42,10 +42,10 @@ export default class Sun{
         // this.directionalLightHelper = directionalLightHelper
         // this.scene.add(this.directionalLight, this.directionalLightHelper)
 
-        // animate sunlight coming on
+        // animate smoonlight coming on
         let timeline = gsap.timeline()
         timeline.to(
-            this.sun.material, 
+            this.moon.material, 
             {
                 duration: 0.33, 
                 opacity: 1
@@ -63,19 +63,19 @@ export default class Sun{
         timeline.to(
             this.scene.background,
             {
-                r: 1.0,
-                g: 0.93,
-                b: 0.75,
+                r: 0.00,
+                g: 0.00,
+                b: 0.02,
                 duration:0.33
             }
         )
     }
 
     destroy(){
-        // animate sun fading
+        // animate moon fading
         let timeline = gsap.timeline()
         timeline.to(
-            this.sun.material, 
+            this.moon.material, 
             {
                 duration: 0.33, 
                 opacity: 0
@@ -83,7 +83,7 @@ export default class Sun{
             }
         )
 
-        // animate sunlight going away and then disposing
+        // animate moonlight going away and then disposing
         timeline.to(
             this.directionalLight,
             {
@@ -91,9 +91,9 @@ export default class Sun{
                 intensity: 0,
                 onComplete: () => 
                 {
-                    this.sun.geometry.dispose()
-                    this.sun.material.dispose()
-                    this.scene.remove(this.sun)
+                    this.moon.geometry.dispose()
+                    this.moon.material.dispose()
+                    this.scene.remove(this.moon)
                     this.directionalLight.dispose()
                 }
             }
