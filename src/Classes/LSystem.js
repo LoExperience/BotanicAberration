@@ -15,7 +15,7 @@ export default class LSystem
 
         // TODO should really be in a function...
         this.iterations = iterations + (this.pooAmount / 10)
-        if(this.sun || this.moon){this.iterations *= 2.0}
+        if(this.sun || this.moon){this.iterations *= 1.5}
         this.iterations = Math.round(this.iterations)
     }
 

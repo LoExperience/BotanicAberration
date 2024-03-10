@@ -158,7 +158,7 @@ export default class Start{
         // Ambient Light
         const ambientLight = new THREE.AmbientLight(0xFFFFFF, 1.0)
         this.scene.add(ambientLight)
-        this.debugPanel.add(ambientLight, 'intensity').min(0).max(15).step(0.1).name('ambient intensity')
+        // this.debugPanel.add(ambientLight, 'intensity').min(0).max(15).step(0.1).name('ambient intensity')
 
     }
 

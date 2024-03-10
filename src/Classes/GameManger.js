@@ -16,7 +16,7 @@ export default class GameManager
         this.startTrackingItems()
         this.treeSegmentsMeshes = []
         this.debugPanel = window.debugPanel
-        this.branchSize = 0.0
+        this.branchSize = 0.02
         this.multiplier = 10.0
         this.drunkness = 0.0
         this.poo = 0.0
@@ -50,6 +50,24 @@ export default class GameManager
         score = Math.round(this.treeSegmentsMeshes.length * this.branchSize * this.multiplier)
         this.pointsToSpend += score
         this.playing = false
+
+        const popUp = document.getElementById('message-div')
+
+        if(score < 5){
+            popUp.textContent = '[+' + score + ' Life Points] You have managed to create life in this vast emptiness! It is small but it is a start! Save up life points to unlock items to make your creations'
+        }else if(score >= 5){
+            popUp.textContent = '[+' + score + ' Life Points] What a beauty! Try stacking multiple pollen, plant food or alcohol to encourage your plants to grow in weird and wonderful ways!'
+        }
+        
+        popUp.style.display = 'grid'
+        popUp.addEventListener('click', () => 
+            {  
+                popUp.style.display = 'none'
+                document.getElementById('inventory').style.display = 'grid'
+            }
+        )
+
+
     }
 
     // start animation for the tree
@@ -129,6 +147,7 @@ export default class GameManager
                 if(!this.playing){
                         // lock ui
                         this.playing = true
+                        document.getElementById('inventory').style.display = 'none'
 
                         // set music base on ui selection
                         if(this.currentMusicTrack) {this.setUpAudio(this.currentMusicTrack)}
@@ -137,7 +156,7 @@ export default class GameManager
                         const newTree = new LSystem('X', {'F': 'FFF', 'X':'F*X+^[[X]&-X]&-/F[*&-*FX]+^[X*]'}, 1, 0.25, 25, this.poo, this.sun, this.moon)
 
                         // generate tree based on lsystem
-                        this.generateTree(newTree, 0.07, 5, this.drunkness, this.poo)
+                        this.generateTree(newTree, this.branchSize, 10, this.drunkness, this.poo)
 
                         // play animation 
                         this.animateTree()
