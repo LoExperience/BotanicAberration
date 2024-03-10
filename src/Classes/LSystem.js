@@ -2,15 +2,21 @@ import * as THREE from 'three'
 
 export default class LSystem
 {
-    constructor(start, rules, iterations, baseLength, angle, pooAmount){
+    constructor(start, rules, iterations, baseLength, angle, pooAmount, sun, moon){
         this.start = start
         this.rules = rules
-        this.iterations = iterations
         this.angle = angle
         this.segments = []
         this.startingLength = 1
         this.pooAmount = pooAmount
         this.baseLength = baseLength * (1 + (this.pooAmount/10))
+        this.sun = sun
+        this.moon = moon
+
+        // TODO should really be in a function...
+        this.iterations = iterations + (this.pooAmount / 10)
+        if(this.sun || this.moon){this.iterations *= 2.0}
+        this.iterations = Math.round(this.iterations)
     }
 
     // returns an L system string after applying all the rules

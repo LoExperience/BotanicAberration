@@ -134,7 +134,7 @@ export default class GameManager
                         if(this.currentMusicTrack) {this.setUpAudio(this.currentMusicTrack)}
 
                         // generate lsystem based on ui selection
-                        const newTree = new LSystem('X', {'F': 'FFF', 'X':'F*X+^[[X]&-X]&-/F[*&-*FX]+^[X*]'}, 3, 0.25, 25, this.poo)
+                        const newTree = new LSystem('X', {'F': 'FFF', 'X':'F*X+^[[X]&-X]&-/F[*&-*FX]+^[X*]'}, 1, 0.25, 25, this.poo, this.sun, this.moon)
 
                         // generate tree based on lsystem
                         this.generateTree(newTree, 0.07, 5, this.drunkness, this.poo)
