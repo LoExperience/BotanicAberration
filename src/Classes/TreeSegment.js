@@ -2,11 +2,12 @@ import * as THREE from 'three'
 
 export default class TreeSegment
 {
-    constructor(start, end, subDivision, radius, radialSegments, drunkness){
+    constructor(start, end, subDivision, radius, radialSegments, drunkness, pooAmount){
         // setting params as attributes
         this.start = start
         this.end = end
         this.drunkness = drunkness
+        this.pooAmount = pooAmount
 
         const midPoint = new THREE.Vector3().copy(this.start)
         midPoint.add(this.end)
@@ -20,7 +21,7 @@ export default class TreeSegment
 
         this.curveControlPoint = midPoint
         this.subDivision = subDivision
-        this.radius = radius
+        this.radius = radius * (1 + (this.pooAmount / 5))
         this.radialSegments = radialSegments
 
         // set curve, geo and material

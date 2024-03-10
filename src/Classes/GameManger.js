@@ -104,13 +104,13 @@ export default class GameManager
     }
 
     // generate a tree based on rules defined by user items
-    generateTree(lSystem, branchSize, branchDimensions, drunkness){
+    generateTree(lSystem, branchSize, branchDimensions, drunkness, pooAmount){
         this.branchSize = branchSize
         const newTree = lSystem
         const treeString = newTree.applyRules()
         const treeSegments = newTree.generateTreePaths(treeString)
         treeSegments.forEach(element => {
-            const newSegment = new TreeSegment(element[0], element[1], 10.0, branchSize, branchDimensions, drunkness)
+            const newSegment = new TreeSegment(element[0], element[1], 10.0, branchSize, branchDimensions, drunkness, this.poo)
             newSegment.getMesh().visible = false // hide mesh before animation
             this.scene.add(newSegment.getMesh())
             this.treeSegmentsMeshes.push(newSegment)
@@ -137,7 +137,7 @@ export default class GameManager
                         const newTree = new LSystem('X', {'F': 'FFF', 'X':'F*X+^[[X]&-X]&-/F[*&-*FX]+^[X*]'}, 3, 0.25, 25, this.poo)
 
                         // generate tree based on lsystem
-                        this.generateTree(newTree, 0.07, 5, this.drunkness)
+                        this.generateTree(newTree, 0.07, 5, this.drunkness, this.poo)
 
                         // play animation 
                         this.animateTree()
@@ -228,6 +228,9 @@ export default class GameManager
                                 activeCount.textContent = 1
                                 activeCount.removeAttribute('hidden')
                                 clearButton.removeAttribute('hidden')
+                                if(slotNumber == 'slot_6'){this.pollen = activeCount.textContent}
+                                if(slotNumber == 'slot_7'){this.poo = activeCount.textContent}
+                                if(slotNumber == 'slot_8'){this.drunkness = activeCount.textContent}
                             } else{
                                 activeCount.textContent = Number(activeCount.textContent) + 1
                                 if(slotNumber == 'slot_6'){this.pollen = activeCount.textContent}
