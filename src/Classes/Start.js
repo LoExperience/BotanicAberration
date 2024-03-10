@@ -60,7 +60,7 @@ export default class Start{
     }
 
     setUpCamera(){
-        this.camera = new THREE.PerspectiveCamera(35, this.sizes.width / this.sizes.height, 0.1, 500)
+        this.camera = new THREE.PerspectiveCamera(50, this.sizes.width / this.sizes.height, 0.1, 500)
         this.camera .position.z = 3
         this.camera .position.y = 2
         this.camera.lookAt(this.scene.position)
@@ -101,23 +101,25 @@ export default class Start{
             const deltaTime = elapsedTime - oldElapsedTime
             oldElapsedTime = elapsedTime
 
-            //Update Camera            
+            //Update Camera
+            const initHeight = 2        
             let radius = 4
             let rotationSpeed = (1 * deltaTime) * 0.2 
-            let center = new THREE.Vector3(0, 2, 0) 
+            let center = new THREE.Vector3(0, 0, 0) 
 
             if (window.topSegment){
-                radius = Math.max(Math.max(Math.abs(window.topSegment.x), Math.abs(window.topSegment.z)) * 11, 3)
+                radius = Math.max(Math.max(Math.abs(window.topSegment.x), Math.abs(window.topSegment.z)) * 3, 3)
                 rotationSpeed = (1 * deltaTime) * 0.2
-                center.y += Math.max(Math.abs(window.topSegment.y * 1), 3)
+                center.y += Math.max(Math.abs(window.topSegment.y * 1), initHeight)
             }
 
             // Update in animation loop
             cameraAngle += rotationSpeed;
-            const cameraX = THREE.MathUtils.lerp(this.camera.position.x, center.x + radius * Math.cos(cameraAngle), 0.05)
-            const cameraZ = THREE.MathUtils.lerp(this.camera.position.z, center.z + radius * Math.sin(cameraAngle), 0.05)
+            const cameraX = THREE.MathUtils.lerp(this.camera.position.x, center.x + radius * Math.cos(cameraAngle), 0.02)
+            const cameraZ = THREE.MathUtils.lerp(this.camera.position.z, center.z + radius * Math.sin(cameraAngle), 0.02)
             const cameraY = THREE.MathUtils.lerp(this.camera.position.y, center.y, 0.05)
-            this.camera.position.set(cameraX, cameraY, cameraZ);
+            this.camera.position.set(cameraX, Math.max(cameraY, initHeight), cameraZ)
+            this.controls.target.set(0, (cameraY * 0.4) , 0)
             this.controls.update()
 
             // Render
