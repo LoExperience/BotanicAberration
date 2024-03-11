@@ -95,6 +95,8 @@ export default class Moon{
                     this.moon.material.dispose()
                     this.scene.remove(this.moon)
                     this.directionalLight.dispose()
+                    this.scene.remove(this.directionalLight)
+                    console.log(this.moon);
                 }
             }
         )

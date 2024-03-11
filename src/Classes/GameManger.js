@@ -27,6 +27,7 @@ export default class GameManager
         this.sun
         this.moon
         this.playing = false
+        this.sound
     }
 
     // loads music
@@ -34,6 +35,7 @@ export default class GameManager
         const listener = new THREE.AudioListener()
         this.camera.add(listener)
         const sound = new THREE.Audio( listener )
+        console.log(this.sound)
         const audioLoader = new THREE.AudioLoader();
         audioLoader.load( track, function( buffer ) { 
             sound.setBuffer( buffer );
@@ -41,6 +43,7 @@ export default class GameManager
             sound.setVolume( 0.5 );
             sound.play();
         })
+        this.sound = sound
     }
     
 
@@ -48,34 +51,73 @@ export default class GameManager
     calculateScore(){
         let score = 0
         score = Math.round(this.treeSegmentsMeshes.length * this.branchSize * this.multiplier)
-        this.pointsToSpend += score
         this.playing = false
+        return score
+    }
 
-        const popUp = document.getElementById('message-div')
-
+    // management of each round
+    endRound(score){
+        // insert some text to give user feedback / info
+        let popUp = document.getElementById('message-div')
         if(score < 5){
-            popUp.textContent = '[+' + score + ' Life Points] You have managed to create life in this vast emptiness! It is small but it is a start! Save up life points to unlock items to make your creations'
+            popUp.textContent = '[+' + score + ' Life Points.] You have managed to create life in this vast emptiness! It is small but it is a start! Save up life points to unlock items to make your creations.'
         }else if(score >= 5){
             popUp.textContent = '[+' + score + ' Life Points] What a beauty! Try stacking multiple pollen, plant food or alcohol to encourage your plants to grow in weird and wonderful ways!'
         }
-        
+        popUp.textContent += ' Click this box to continue!'
         popUp.style.display = 'grid'
+
+        // when the dialog box is closed, clear the old tree
         popUp.addEventListener('click', () => 
             {  
-                popUp.style.display = 'none'
-                document.getElementById('inventory').style.display = 'grid'
+                popUp.style.display = 'none' //hide text
+                document.getElementById('inventory').style.display = 'grid' //show inventory
+                this.treeSegmentsMeshes.forEach(mesh => { //get rid of mesh and geomateries
+                    this.scene.remove(mesh.tubeMesh)
+                    mesh.tubeGeometry.dispose()
+                    mesh.tubeMaterial.dispose()
+                    this.treeSegmentsMeshes = []
+                })
+
+                // clear applied items
+                const allItems = document.querySelectorAll('.count')
+                allItems.forEach(element => {
+                    element.textContent = ''
+                });
+
+                const clearButtons = document.querySelectorAll('.clear')
+                clearButtons.forEach(element => {
+                    element.setAttribute('hidden', true)
+                });
+
+                const count = document.querySelectorAll('.count')
+                count.forEach(element => {
+                    element.setAttribute('hidden', true)
+                });
+
+                //todo stop music
+                this.currentMusicTrack = undefined
+                if(this.sound){this.sound.stop()}
+
+                //todo reset sun and moon position
+                window.topSegment = undefined
+
+
+                
             }
         )
-
-
+        
     }
+
 
     // start animation for the tree
     animateTree(){
         const animateSpeed = 0.05
         this.timeline = gsap.timeline({onComplete: () => {
-            this.calculateScore() 
-            document.querySelector('.score').textContent = this.pointsToSpend
+            const pointsEarned = this.calculateScore() 
+            document.querySelector('.score').textContent = this.pointsToSpend + pointsEarned
+            
+            this.endRound(pointsEarned)
             this.playing = false
         }})
         this.timeline.timeScale(0.1)
@@ -180,10 +222,10 @@ export default class GameManager
                     // Locked behaviour
                     if (this.itemState[slotNumber]['state'] == 'locked'){
 
-                        if(this.pointsToSpend >= this.itemState[slotNumber]['cost']){
+                        if(this.pointsToSpend >= this.itemState[slotNumber]['unlockCost']){
 
-                            // deduct costs from points
-                            this.pointsToSpend -= this.itemState[slotNumber]['cost']
+                            // deduct unlockCosts from points
+                            this.pointsToSpend -= this.itemState[slotNumber]['unlockCost']
                             document.querySelector('.score').textContent = this.pointsToSpend
 
                             // unlock it and change image
@@ -247,14 +289,37 @@ export default class GameManager
                                 activeCount.textContent = 1
                                 activeCount.removeAttribute('hidden')
                                 clearButton.removeAttribute('hidden')
-                                if(slotNumber == 'slot_6'){this.pollen = activeCount.textContent}
-                                if(slotNumber == 'slot_7'){this.poo = activeCount.textContent}
-                                if(slotNumber == 'slot_8'){this.drunkness = activeCount.textContent}
+                                if(slotNumber == 'slot_6'){
+                                    this.pollen = activeCount.textContent
+                                    this.pointsToSpend -= this.itemState[slotNumber]['useCost']
+                                    document.querySelector('.score').textContent = this.pointsToSpend
+                                }
+                                if(slotNumber == 'slot_7'){
+                                    this.poo = activeCount.textContent}
+                                    this.pointsToSpend -= this.itemState[slotNumber]['useCost']
+                                    document.querySelector('.score').textContent = this.pointsToSpend
+                                if(slotNumber == 'slot_8'){
+                                    this.drunkness = activeCount.textContent
+                                    this.pointsToSpend -= this.itemState[slotNumber]['useCost']
+                                    document.querySelector('.score').textContent = this.pointsToSpend
+                                }
                             } else{
                                 activeCount.textContent = Number(activeCount.textContent) + 1
-                                if(slotNumber == 'slot_6'){this.pollen = activeCount.textContent}
-                                if(slotNumber == 'slot_7'){this.poo = activeCount.textContent}
-                                if(slotNumber == 'slot_8'){this.drunkness = activeCount.textContent}
+                                if(slotNumber == 'slot_6'){
+                                    this.pollen = activeCount.textContent
+                                    this.pointsToSpend -= this.itemState[slotNumber]['useCost'] 
+                                    document.querySelector('.score').textContent = this.pointsToSpend
+                                }
+                                if(slotNumber == 'slot_7'){
+                                    this.poo = activeCount.textContent
+                                    this.pointsToSpend -= this.itemState[slotNumber]['useCost'] 
+                                    document.querySelector('.score').textContent = this.pointsToSpend
+                                }
+                                if(slotNumber == 'slot_8'){
+                                    this.drunkness = activeCount.textContent
+                                    this.pointsToSpend -= this.itemState[slotNumber]['useCost'] 
+                                    document.querySelector('.score').textContent = this.pointsToSpend
+                                }
                             }
                         }
                     }
@@ -274,9 +339,24 @@ export default class GameManager
                     clearButton.setAttribute('hidden', true)
                     activeCount.setAttribute('hidden', true)
                     activeCount.textContent = ''
-                    if(slotNumber == 'slot_6'){this.pollen = 0}
-                    if(slotNumber == 'slot_7'){this.poo = 0}
-                    if(slotNumber == 'slot_8'){this.drunkness = 0}
+                    if(slotNumber == 'slot_7'){
+                        this.pointsToSpend += this.itemState[slotNumber]['useCost'] * this.poo
+                        this.poo = 0
+                        document.querySelector('.score').textContent = this.pointsToSpend
+
+                    }
+                    if(slotNumber == 'slot_6'){
+                        this.pointsToSpend += this.itemState[slotNumber]['useCost'] * this.pollen
+                        this.pollen = 0
+                        document.querySelector('.score').textContent = this.pointsToSpend
+
+                    }
+                    if(slotNumber == 'slot_8'){
+                        this.pointsToSpend += this.itemState[slotNumber]['useCost'] * this.drunkness
+                        this.drunkness = 0
+                        document.querySelector('.score').textContent = this.pointsToSpend
+
+                    }
                 }
             })
         })
@@ -288,49 +368,52 @@ export default class GameManager
             slot_1: {
                 image:'./sun.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/sunrise.html
                 state: 'locked',
-                cost: 10,
+                unlockCost: 10,
                 description: 'Discover the power of sunlight! [Free. Affects growth and color]'
             },    
             slot_2: {
                 image: './night.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/night-sleep.html
                 state: 'locked',
-                cost: 100,
+                unlockCost: 100,
                 description: 'Some plants thrive better in the moonlight [Free. Affects growth and color]'                
             }, 
             slot_3: {
                 image: './classical.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/classical-knowledge.html
                 state: 'locked',
-                cost: 20,
+                unlockCost: 20,
                 description: 'The soothing sound of pianos promotes harmony in growth [Free. Affects tree shape]'            
             }, 
             slot_4: {
                 image: './jazz.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/saxophone.html
                 state: 'locked',
-                cost: 20,
+                unlockCost: 20,
                 description: 'Jazz encourages more improvisation! [Free. Affects tree shape]'            
             }, 
             slot_5: {
                 image: './spa.svg', // CC BY 3.0 https://game-icons.net/1x1/lorc/meditation.html
                 state: 'locked',
-                cost: 20,
+                unlockCost: 20,
                 description: 'Do trees know how to enjoy spa music? [Free. Affects tree shape]'            
             }, 
             slot_6: {
                 image: './pollen.svg', // CC BY 3.0 https://game-icons.net/1x1/lorc/pollen-dust.html
                 state: 'locked',
-                cost: 20,
+                unlockCost: 20,
+                useCost: 10,
                 description: 'Pollen enables sexual reproduction! [20pt each. Affects fruiting]'            
             }, 
             slot_7: {
                 image: './poo.svg', // CC BY 3.0 https://game-icons.net/1x1/lorc/turd.html
                 state: 'locked',
-                cost: 20,
+                unlockCost: 20,
+                useCost: 10,
                 description: 'Plant food! Very smelly though... [20pt each. Affects growth]'            
             }, 
             slot_8: {
                 image: './booze.svg', // CC BY 3.0 https://game-icons.net/1x1/lorc/martini.html
                 state: 'locked',
-                cost: 20,
+                unlockCost: 20,
+                useCost: 10,
                 description: 'Humans love alcohol so why not plants?'            
             }, 
             locked: './question.svg' // CC BY 3.0 https://game-icons.net/1x1/delapouite/perspective-dice-six-faces-random.html
