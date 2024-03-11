@@ -1,8 +1,3 @@
-@font-face {
-    font-family: 'score-font'; /* Name your font */
-    src: url('./fonts/Plantsletters-LO2Z.ttf') format('truetype'); 
-  }
-
 *
 {
     margin: 0;
@@ -39,7 +34,7 @@ body
     color: green;
     padding-top: 3vh;
     padding-left: 3vw;
-    font-family: 'score-font';
+    font-family: Helvetica;
     font-size: 5vw;
   }
 
@@ -199,3 +194,40 @@ body
     transform-origin: top left;
     transition: transform 1s ease-in-out;
 }
+
+#welcome-container {
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100%; 
+    height: 100%; 
+    background-color: rgba(0, 0, 0, 0.5); 
+    display: none; 
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  #welcome {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    line-height:1.6 ;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  
+  #close-welcome {
+    position: relative;
+    top: 10px;
+    right: 15px;
+    cursor: pointer; 
+    color: red;
+    font-weight: bolder;
+  }
+
+  .highlighted{
+    color: blue;
+    font-weight: bolder;
+  }

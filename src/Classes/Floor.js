@@ -39,7 +39,7 @@ export default class Sun{
         // Animation
 
         gsap.to(floor.scale, {
-            duration: 1,
+            duration: 3,
             x: 1,
             y: 1,
             z: 1,

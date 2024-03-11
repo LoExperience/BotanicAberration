@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
-import Sun from './Sun.js'
 import Floor from './Floor.js'
 
 export default class Start{
@@ -13,8 +12,8 @@ export default class Start{
         this.scene = this.setUpScene()
 
         //set up debug panel
-        this.debugPanel = new GUI()
-        this.setUpDebug()
+        // this.debugPanel = new GUI()
+        // this.setUpDebug()
 
         //set up resizing
         this.sizes ={     
@@ -32,7 +31,30 @@ export default class Start{
         this.renderer
         this.startRenderer()
         this.setUpEnv()
+        this.welcome()
         
+    }
+
+    welcome(){
+        // Welcome Message
+        const welcomeContainer = document.getElementById('welcome-container');
+        const closeButton = document.getElementById('close-welcome');
+
+        // Function to show the popup
+        function showWelcome() {
+            welcomeContainer.style.display = 'flex'; 
+        }
+
+        // Function to hide the popup
+        function hideWelcome() {
+        welcomeContainer.style.display = 'none'
+        const floor = new Floor()
+        }
+
+        // Event listener for close button
+        welcomeContainer.addEventListener('click', hideWelcome);
+
+        showWelcome()
     }
 
     setUpScene(){
@@ -150,9 +172,6 @@ export default class Start{
     }
 
     setUpEnv(){
-        // floor
-        const floor = new Floor()
-
         // Lights
 
         // Ambient Light

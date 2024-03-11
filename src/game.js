@@ -9,6 +9,8 @@ import Start from './Classes/Start.js'
  */
 const start = new Start()
 
+
+
 // Fake loading screen
 let loadingBar = document.getElementsByClassName('loading-bar')[0]
 loadingBar.style.transform =`scaleX(1)`

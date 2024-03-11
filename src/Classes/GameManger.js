@@ -60,9 +60,9 @@ export default class GameManager
         // insert some text to give user feedback / info
         let popUp = document.getElementById('message-div')
         if(score < 5){
-            popUp.textContent = '[+' + score + ' Life Points.] You have managed to create life in this vast emptiness! It is small but it is a start! Save up life points to unlock items to make your creations.'
+            popUp.textContent = '[+' + score + ' Life Points.] You have managed to create life in this vast emptiness! It is small but it is a start! Save up life points (see top left) to unlock more wonders of the universe!'
         }else if(score >= 5){
-            popUp.textContent = '[+' + score + ' Life Points] What a beauty! Try stacking multiple pollen, plant food or alcohol to encourage your plants to grow in weird and wonderful ways!'
+            popUp.textContent = '[+' + score + ' Life Points] What a beauty! Some items can be stacked and their effects will accumulate. This can lead to some weird and wonderful plants!'
         }
         popUp.textContent += ' Click this box to continue!'
         popUp.style.display = 'grid'
@@ -101,6 +101,8 @@ export default class GameManager
 
                 //todo reset sun and moon position
                 window.topSegment = undefined
+                if(this.sun){this.sun.destroy()}
+                if(this.moon){this.moon.destroy()}
 
 
                 
@@ -368,53 +370,53 @@ export default class GameManager
             slot_1: {
                 image:'./sun.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/sunrise.html
                 state: 'locked',
-                unlockCost: 10,
+                unlockCost: 1,
                 description: 'Discover the power of sunlight! [Free. Affects growth and color]'
             },    
             slot_2: {
                 image: './night.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/night-sleep.html
                 state: 'locked',
-                unlockCost: 100,
+                unlockCost: 50,
                 description: 'Some plants thrive better in the moonlight [Free. Affects growth and color]'                
             }, 
             slot_3: {
                 image: './classical.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/classical-knowledge.html
                 state: 'locked',
-                unlockCost: 20,
+                unlockCost: 5,
                 description: 'The soothing sound of pianos promotes harmony in growth [Free. Affects tree shape]'            
             }, 
             slot_4: {
                 image: './jazz.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/saxophone.html
                 state: 'locked',
-                unlockCost: 20,
+                unlockCost: 25,
                 description: 'Jazz encourages more improvisation! [Free. Affects tree shape]'            
             }, 
             slot_5: {
                 image: './spa.svg', // CC BY 3.0 https://game-icons.net/1x1/lorc/meditation.html
                 state: 'locked',
-                unlockCost: 20,
+                unlockCost: 25,
                 description: 'Do trees know how to enjoy spa music? [Free. Affects tree shape]'            
             }, 
             slot_6: {
                 image: './pollen.svg', // CC BY 3.0 https://game-icons.net/1x1/lorc/pollen-dust.html
                 state: 'locked',
-                unlockCost: 20,
+                unlockCost: 10,
                 useCost: 10,
-                description: 'Pollen enables sexual reproduction! [20pt each. Affects fruiting]'            
+                description: 'Pollen enables sexual reproduction! [10pt each. Affects fruiting]'            
             }, 
             slot_7: {
                 image: './poo.svg', // CC BY 3.0 https://game-icons.net/1x1/lorc/turd.html
                 state: 'locked',
-                unlockCost: 20,
+                unlockCost: 5,
                 useCost: 10,
-                description: 'Plant food! Very smelly though... [20pt each. Affects growth]'            
+                description: 'Plant food! Very smelly though... [10pt each. Affects growth]'            
             }, 
             slot_8: {
                 image: './booze.svg', // CC BY 3.0 https://game-icons.net/1x1/lorc/martini.html
                 state: 'locked',
-                unlockCost: 20,
+                unlockCost: 10,
                 useCost: 10,
-                description: 'Humans love alcohol so why not plants?'            
+                description: 'Humans love alcohol so why not plants? [10pt each. Affects ???]'            
             }, 
             locked: './question.svg' // CC BY 3.0 https://game-icons.net/1x1/delapouite/perspective-dice-six-faces-random.html
         }
