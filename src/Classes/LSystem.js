@@ -14,7 +14,7 @@ export default class LSystem
         this.moon = moon
 
         // TODO should really be in a function...
-        this.iterations = iterations + (this.pooAmount / 10)
+        this.iterations = iterations + (this.pooAmount / 8)
         if(this.sun || this.moon){this.iterations *= 1.5}
         this.iterations = Math.round(this.iterations)
     }
@@ -26,7 +26,10 @@ export default class LSystem
         let newstart = ''
         for (let j = 0; j < this.start.length; j++) {
           const char = this.start[j]
-          newstart += this.rules[char] || char // Apply rules or keep the character
+          if(char in this.rules)
+            {newstart += this.rules[char][Math.floor(Math.random() * this.rules[char].length)]} // pick one rule at random
+          else
+            {newstart += char}
         }
         this.start = newstart;
       }

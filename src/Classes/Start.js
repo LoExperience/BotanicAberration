@@ -148,16 +148,16 @@ export default class Start{
 
             // update sun position
 
-            if(window.sun && window.topSegment ){
+            if(window.sun && window.topSegment){
                 window.sun.sun.position.x = THREE.MathUtils.lerp(window.sun.sun.position.x, Math.abs(window.topSegment.x) + 1 , 0.01)
-                window.sun.sun.position.y = THREE.MathUtils.lerp(window.sun.sun.position.y, window.topSegment.y - 1, 0.01)
+                window.sun.sun.position.y = Math.max(THREE.MathUtils.lerp(window.sun.sun.position.y, window.topSegment.y - 1, 0.01), initHeight)
                 window.sun.sun.position.z = THREE.MathUtils.lerp(window.sun.sun.position.z, Math.abs(window.topSegment.z) + 1, 0.01)
             }
 
             //update moon position
             if(window.moon && window.topSegment ){
                 window.moon.moon.position.x = THREE.MathUtils.lerp(window.moon.moon.position.x, Math.abs(window.topSegment.x) + 1 , 0.01)
-                window.moon.moon.position.y = THREE.MathUtils.lerp(window.moon.moon.position.y, window.topSegment.y - 1, 0.01)
+                window.moon.moon.position.y = Math.max(THREE.MathUtils.lerp(window.moon.moon.position.y, window.topSegment.y - 1, 0.01), initHeight)
                 window.moon.moon.position.z = THREE.MathUtils.lerp(window.moon.moon.position.z, Math.abs(window.topSegment.z) + 1, 0.01)
             }
 

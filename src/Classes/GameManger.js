@@ -35,7 +35,6 @@ export default class GameManager
         const listener = new THREE.AudioListener()
         this.camera.add(listener)
         const sound = new THREE.Audio( listener )
-        console.log(this.sound)
         const audioLoader = new THREE.AudioLoader();
         audioLoader.load( track, function( buffer ) { 
             sound.setBuffer( buffer );
@@ -45,7 +44,6 @@ export default class GameManager
         })
         this.sound = sound
     }
-    
 
     // calculate score
     calculateScore(){
@@ -103,9 +101,6 @@ export default class GameManager
                 window.topSegment = undefined
                 if(this.sun){this.sun.destroy()}
                 if(this.moon){this.moon.destroy()}
-
-
-                
             }
         )
         
@@ -142,25 +137,6 @@ export default class GameManager
                     }
                 )
         })
-        
-        // Adding to debug panel
-        // this.debugAnimationObject = {
-        //     stopAnimation: () => {this.timeline.pause()},
-        //     playAnimation: () => {
-        //         this.timeline.resume()
-        //         if(this.currentMusicTrack) {this.setUpAudio(this.currentMusicTrack)}
-        //     },
-        //     resetAnimation: () => {this.timeline.restart()},
-        //     animationSpeed: 1.00
-        // }
-
-        // const debugAnimation = this.debugPanel.addFolder('Animations')
-        // debugAnimation.add(this.debugAnimationObject, 'stopAnimation')
-        // debugAnimation.add(this.debugAnimationObject, 'playAnimation')
-        // debugAnimation.add(this.debugAnimationObject, 'resetAnimation')
-        // debugAnimation.add(this.debugAnimationObject, 'animationSpeed').min(0).max(5.0).step(0.1).onFinishChange(
-        //     () => this.timeline.timeScale(this.debugAnimationObject.animationSpeed)
-        // )
 
         return this.timeline
     }
@@ -197,7 +173,25 @@ export default class GameManager
                         if(this.currentMusicTrack) {this.setUpAudio(this.currentMusicTrack)}
 
                         // generate lsystem based on ui selection
-                        const newTree = new LSystem('X', {'F': 'FFF', 'X':'F*X+^[[X]&-X]&-/F[*&-*FX]+^[X*]'}, 1, 0.25, 25, this.poo, this.sun, this.moon)
+                        // const newTree = new LSystem('X', {'F': 'FFF', 'X':'F*X+^[[X]&-X]&-/F[*&-*FX]+^[X*]'}, 1, 0.25, 25, this.poo, this.sun, this.moon)
+                        
+                        
+                        // Classical Music
+                        const classicRules = 
+                            {
+                                'X': ['F[X]Y', 'FF', 'F[F]Y', 'F[Y]X' ],
+                                'F': ['FF', 'F[Y]X', 'Y[Y]X', 'FYF'],
+                                'Y': ['/F&F', '/F*F', '&F*F', '^F*F', '^F/F', '*F*F', '/F/F', '&F&F', '^F^F', '/Y[X]']
+                            }
+                        // Jazz Music
+                        const JazzRules = 
+                            {
+                                'X': ['[^F^Y][/Y*F]&Y^F'],
+                                'F': ['FF', 'F[Y]X', 'Y[Y]X', 'FYF'],
+                                'Y': ['/F&F', '/F*F', '&F*F', '^F*F', '^F/F', '*F*F', '/F/F', '&F&F', '^F^F', '/Y[X]']
+                            }
+
+                        const newTree = new LSystem('X', JazzRules, 2, 0.10, 25, this.poo, this.sun, this.moon)
 
                         // generate tree based on lsystem
                         this.generateTree(newTree, this.branchSize, 10, this.drunkness, this.poo)
@@ -383,7 +377,7 @@ export default class GameManager
                 image: './classical.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/classical-knowledge.html
                 state: 'locked',
                 unlockCost: 5,
-                description: 'The soothing sound of pianos promotes harmony in growth [Free. Affects tree shape]'            
+                description: 'The soothing sound of melodies promote harmony in growth [Free. Affects tree shape]'            
             }, 
             slot_4: {
                 image: './jazz.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/saxophone.html
