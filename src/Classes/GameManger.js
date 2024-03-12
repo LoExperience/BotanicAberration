@@ -191,7 +191,7 @@ export default class GameManager
                                 'Y': ['/F&F', '/F*F', '&F*F', '^F*F', '^F/F', '*F*F', '/F/F', '&F&F', '^F^F', '/Y[X]']
                             }
 
-                        const newTree = new LSystem('X', JazzRules, 2, 0.10, 25, this.poo, this.sun, this.moon)
+                        const newTree = new LSystem('X', classicRules, 2, 0.10, 25, this.poo, this.sun, this.moon)
 
                         // generate tree based on lsystem
                         this.generateTree(newTree, this.branchSize, 10, this.drunkness, this.poo)

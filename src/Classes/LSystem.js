@@ -9,7 +9,7 @@ export default class LSystem
         this.segments = []
         this.startingLength = 1
         this.pooAmount = pooAmount
-        this.baseLength = baseLength * (1 + (this.pooAmount/10))
+        this.baseLength = baseLength * (1 + (this.pooAmount/5))
         this.sun = sun
         this.moon = moon
 
