@@ -48,7 +48,11 @@ export default class LSystem
         // find all earlier end points
         newString = newString.replaceAll('F]','F!]')
 
-        return newString
+        //add leaf on the last open branch
+        const lastBranch = newString.lastIndexOf('F')
+        const newerString = newString.slice(0,lastBranch) + '!' + newString.slice(lastBranch)
+        
+        return newerString
     }
 
     // Takes an L system string and returns a collection of tree paths based on the rules

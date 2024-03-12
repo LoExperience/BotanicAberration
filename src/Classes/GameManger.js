@@ -16,6 +16,7 @@ export default class GameManager
         this.itemState
         this.startTrackingItems()
         this.treeSegmentsMeshes = []
+        this.leafMeshes =[]
         this.debugPanel = window.debugPanel
         this.branchSize = 0.02
         this.multiplier = 10.0
@@ -72,11 +73,28 @@ export default class GameManager
                 popUp.style.display = 'none' //hide text
                 document.getElementById('inventory').style.display = 'grid' //show inventory
                 this.treeSegmentsMeshes.forEach(mesh => { //get rid of mesh and geomateries
-                    this.scene.remove(mesh.tubeMesh)
-                    mesh.tubeGeometry.dispose()
-                    mesh.tubeMaterial.dispose()
-                    this.treeSegmentsMeshes = []
+                    if(mesh instanceof TreeSegment){
+                        this.scene.remove(mesh.tubeMesh)
+                        mesh.tubeGeometry.dispose()
+                        mesh.tubeMaterial.dispose()
+                        this.treeSegmentsMeshes = []
+                    }
                 })
+
+                // get rid of leaves
+                const leafToDelete = []
+                this.scene.traverse((child) =>
+                {
+                    if(child.name == 'leaf')
+                    {
+                        child.geometry.dispose()
+                        child.material.dispose()
+                        leafToDelete.push(child)
+                    }
+                })
+                leafToDelete.forEach(leaf => {this.scene.remove(leaf)})
+
+                
 
                 // clear applied items
                 const allItems = document.querySelectorAll('.count')
@@ -112,31 +130,38 @@ export default class GameManager
     animateTree(){
         const animateSpeed = 0.05
         this.timeline = gsap.timeline({onComplete: () => {
+            for( let i = 0; i < this.treeSegmentsMeshes.length; i++){
+                if(this.treeSegmentsMeshes[i] instanceof THREE.Vector3){
+                    const newLeaf = new Leaf(this.treeSegmentsMeshes[i - 1].end)
+                }
+            }
+
             const pointsEarned = this.calculateScore() 
             document.querySelector('.score').textContent = this.pointsToSpend + pointsEarned
-            
             this.endRound(pointsEarned)
             this.playing = false
         }})
         this.timeline.timeScale(0.1)
         this.timeline.pause()
         this.treeSegmentsMeshes.forEach(element => {
-                this.timeline.to(
-                    element.tubeMaterial.uniforms.uProgress, 
-                    {
-                        duration: animateSpeed, 
-                        value: 1.0, 
-                        onStart: () => {
-                            this.max = new THREE.Vector3(
-                                Math.max(this.max.x, Math.abs(element.end.x)),
-                                Math.max(this.max.y, Math.abs(element.end.y)),
-                                Math.max(this.max.z, Math.abs(element.end.z))
-                            )
-                            window.topSegment = this.max
-                            element.getMesh().visible = true
-                        }, // make each segment visible as the animation starts
-                    }
-                )
+                if(element instanceof TreeSegment){
+                    this.timeline.to(
+                        element.tubeMaterial.uniforms.uProgress, 
+                        {
+                            duration: animateSpeed, 
+                            value: 1.0, 
+                            onStart: () => {
+                                this.max = new THREE.Vector3(
+                                    Math.max(this.max.x, Math.abs(element.end.x)),
+                                    Math.max(this.max.y, Math.abs(element.end.y)),
+                                    Math.max(this.max.z, Math.abs(element.end.z))
+                                )
+                                window.topSegment = this.max
+                                element.getMesh().visible = true
+                            }, // make each segment visible as the animation starts
+                        }
+                    )
+                }
         })
 
         return this.timeline
@@ -150,7 +175,9 @@ export default class GameManager
         const treeSegments = newTree.generateTreePaths(treeString)
         treeSegments.forEach(element => {
             if(element[0]=='LEAVES'){
-                const newLeaf = new Leaf(element[1])
+                // const newLeaf = new Leaf(element[1])
+                // this.leafMeshes.push(newLeaf)
+                this.treeSegmentsMeshes.push(element[1])
             }
             else{
                 const newSegment = new TreeSegment(element[0], element[1], 10.0, branchSize, branchDimensions, drunkness, this.poo)

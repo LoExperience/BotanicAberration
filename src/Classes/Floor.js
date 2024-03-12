@@ -25,7 +25,7 @@ export default class Sun{
         floorNormalTexture.wrapS = THREE.RepeatWrapping
         floorNormalTexture.wrapT = THREE.RepeatWrapping
         
-        const floorGeometry = new THREE.CircleGeometry(2, 64)
+        const floorGeometry = new THREE.CircleGeometry(1, 32)
         const floorMaterial = new THREE.MeshStandardMaterial({
             map: floorColorTexture,
             normalMap: floorNormalTexture

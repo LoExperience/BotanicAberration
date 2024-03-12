@@ -82,7 +82,7 @@ export default class TreeSegment
                     }    
 
                     // Set the output color
-                    gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
+                    gl_FragColor = vec4(0.75, 0.50, 0.39, alpha);
                 }
                 `
             })  

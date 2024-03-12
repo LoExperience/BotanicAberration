@@ -1,9 +1,6 @@
 import GameManager from './Classes/GameManger.js'
 import Start from './Classes/Start.js'
 
-
-
-
 /**
  * Base
  */

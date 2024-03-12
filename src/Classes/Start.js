@@ -124,6 +124,16 @@ export default class Start{
             const deltaTime = elapsedTime - oldElapsedTime
             oldElapsedTime = elapsedTime
 
+            //update shader uniforms
+
+            this.scene.traverse((child) =>
+                {
+                    if(child.name == 'leaf')
+                    {
+                        child.material.uniforms.u_time.value += (child.material.uniforms.u_windSpeed.value/2) * deltaTime
+                    }
+                })
+
             //Update Camera
             const initHeight = 2        
             let radius = 4
@@ -176,7 +186,6 @@ export default class Start{
         // Ambient Light
         const ambientLight = new THREE.AmbientLight(0xFFFFFF, 1.0)
         this.scene.add(ambientLight)
-        // this.debugPanel.add(ambientLight, 'intensity').min(0).max(15).step(0.1).name('ambient intensity')
 
     }
 
