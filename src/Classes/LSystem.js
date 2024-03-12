@@ -33,7 +33,22 @@ export default class LSystem
         }
         this.start = newstart;
       }
+      this.start = this.injectLeaf(this.start)
       return this.start
+    }
+
+    injectLeaf(lSystemString){
+        const start = lSystemString
+        let newString = start.replaceAll('F]','F!]')
+
+        // get rid of unused symbols
+        newString = newString.replaceAll('Y','')
+        newString = newString.replaceAll('X','')
+
+        // find all earlier end points
+        newString = newString.replaceAll('F]','F!]')
+
+        return newString
     }
 
     // Takes an L system string and returns a collection of tree paths based on the rules
@@ -117,6 +132,12 @@ export default class LSystem
             else if (char === '/') {
                 const rotationQuaternion = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -this.angle * Math.PI / 180); 
                 currentDirection.applyQuaternion(rotationQuaternion)
+            }
+            else if (char === '!') {
+                let newSegment = []
+                newSegment.push('LEAVES')
+                newSegment.push(new THREE.Vector3(x, y, z))
+                this.segments.push(newSegment)
             }
         }
         return this.segments;

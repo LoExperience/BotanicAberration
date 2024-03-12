@@ -4,6 +4,7 @@ import gsap from "gsap"
 import * as THREE from 'three'
 import Sun from "./Sun.js"
 import Moon from "./Moon.js"
+import Leaf from "./Leaf.js"
 
 export default class GameManager
 {
@@ -148,10 +149,15 @@ export default class GameManager
         const treeString = newTree.applyRules()
         const treeSegments = newTree.generateTreePaths(treeString)
         treeSegments.forEach(element => {
-            const newSegment = new TreeSegment(element[0], element[1], 10.0, branchSize, branchDimensions, drunkness, this.poo)
-            newSegment.getMesh().visible = false // hide mesh before animation
-            this.scene.add(newSegment.getMesh())
-            this.treeSegmentsMeshes.push(newSegment)
+            if(element[0]=='LEAVES'){
+                const newLeaf = new Leaf(element[1])
+            }
+            else{
+                const newSegment = new TreeSegment(element[0], element[1], 10.0, branchSize, branchDimensions, drunkness, this.poo)
+                newSegment.getMesh().visible = false // hide mesh before animation
+                this.scene.add(newSegment.getMesh())
+                this.treeSegmentsMeshes.push(newSegment)
+            }
         });
     }
 
@@ -191,7 +197,7 @@ export default class GameManager
                                 'Y': ['/F&F', '/F*F', '&F*F', '^F*F', '^F/F', '*F*F', '/F/F', '&F&F', '^F^F', '/Y[X]']
                             }
 
-                        const newTree = new LSystem('X', classicRules, 2, 0.10, 25, this.poo, this.sun, this.moon)
+                        const newTree = new LSystem('X', classicRules, 3, 0.10, 25, this.poo, this.sun, this.moon)
 
                         // generate tree based on lsystem
                         this.generateTree(newTree, this.branchSize, 10, this.drunkness, this.poo)
