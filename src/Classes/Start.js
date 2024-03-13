@@ -184,7 +184,7 @@ export default class Start{
         // Lights
 
         // Ambient Light
-        const ambientLight = new THREE.AmbientLight(0xFFFFFF, 1.0)
+        const ambientLight = new THREE.AmbientLight(0xFFFFFF, 2.0)
         this.scene.add(ambientLight)
 
     }

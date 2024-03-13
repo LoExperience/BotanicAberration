@@ -63,12 +63,13 @@ export default class Sun{
         timeline.to(
             this.scene.background,
             {
-                r: 1.0,
-                g: 0.93,
-                b: 0.75,
+                r: 0.95,
+                g: 0.89,
+                b: 0.58,
                 duration:0.33
             }
         )
+        this.scene.background.colorSpace = THREE.SRGBColorSpace
     }
 
     destroy(){

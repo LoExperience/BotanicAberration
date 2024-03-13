@@ -3,17 +3,46 @@ import gsap from 'gsap'
 import CustomShaderMaterial from 'three-custom-shader-material/vanilla'
 // import vertexShader from './vertex.glsl' // TODO debug this import error
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import GUI from 'lil-gui'
+
 
 
 export default class Leaf{
 
-    constructor(position){
+    constructor(position, poo, pollenColor){
         this.mesh
+        this.poo = poo
+        this.pollenColor = pollenColor
         this.position = position
         this.scene = window.scene
         this.alphaMap = new THREE.TextureLoader().load('./textures/leaves/alpha1.png')
         this.meshPath = './models/leafSmall.glb'
+        this.leafColor = new THREE.Vector3(1,1,1)
+
+
+        if(window.moon){
+
+            const moonLeafColor = new THREE.Color(
+              window.palette.moon[1].x,
+              window.palette.moon[1].y,
+              window.palette.moon[1].z
+            )
+            this.pollenColor.push(moonLeafColor)
+            this.leafColor = this.pollenColor[Math.floor(Math.random() * this.pollenColor.length)]
+        }
+
+        if(window.sun){
+            const sunLeafColor = new THREE.Color(
+              window.palette.sun[1].x,
+              window.palette.sun[1].y,
+              window.palette.sun[1].z
+            )
+            this.pollenColor.push(sunLeafColor)
+            this.leafColor = this.pollenColor[Math.floor(Math.random() * this.pollenColor.length)]
+            
+
+        }
+
+
         this.material = new CustomShaderMaterial({
             baseMaterial: THREE.MeshStandardMaterial,
             vertexShader: `
@@ -91,8 +120,8 @@ export default class Leaf{
             `,
             uniforms: {
                 u_effectBlend: { value: 1.0 },
-                u_inflate: { value: 0.0 },
-                u_scale: { value: 0.11 },
+                u_inflate: { value: Math.random()* (this.poo / 125) },
+                u_scale: { value:  Math.max(Math.random(),0.5) * (0.11 + (this.poo / 30)) },
                 u_windSpeed: { value: 1.0 },
                 u_time: { value: 0.0 },
             },
@@ -101,7 +130,7 @@ export default class Leaf{
             alphaTest: 0.5,
             opacity: 0,
             side: THREE.FrontSide,
-            color: new THREE.Color(0xff92c4)
+            color: this.leafColor
         })
 
         this.spawn()

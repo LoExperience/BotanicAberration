@@ -12,17 +12,18 @@ export default class GameManager
     {
         this.scene = window.scene
         this.camera = window.camera
-        this.pointsToSpend = 1000
+        this.pointsToSpend = 0
         this.itemState
         this.startTrackingItems()
         this.treeSegmentsMeshes = []
-        this.leafMeshes =[]
+        this.leafMeshes = 0
         this.debugPanel = window.debugPanel
         this.branchSize = 0.02
         this.multiplier = 10.0
         this.drunkness = 0.0
         this.poo = 0.0
         this.pollen = 0.0
+        this.pollenColor = []
         this.currentMusicTrack = null  
         this.timeline
         this.max = new THREE.Vector3(0, 0, 0)
@@ -30,6 +31,14 @@ export default class GameManager
         this.moon
         this.playing = false
         this.sound
+        this.genre = undefined
+        this.palette = {
+            'sun': [new THREE.Vector3(0.55, 0.274, 0.274),
+                new THREE.Vector3(0, 1.0, 0)],
+            'moon': [new THREE.Vector3(0.30, 0.15, 0.00),
+                new THREE.Vector3(1.0, 0.87, 0.87)],
+        }
+        window.palette = this.palette
     }
 
     // loads music
@@ -50,27 +59,53 @@ export default class GameManager
     // calculate score
     calculateScore(){
         let score = 0
-        score = Math.round(this.treeSegmentsMeshes.length * this.branchSize * this.multiplier)
+        this.scene.traverse((child) =>
+                {
+                    if(child.name == 'leaf')
+                    {
+                        this.leafMeshes += 1
+                    }
+                })
+        score = Math.round((this.treeSegmentsMeshes.length + this.leafMeshes) * this.branchSize * this.multiplier)
         this.playing = false
         return score
     }
 
     // management of each round
     endRound(score){
+        //add points
+        this.pointsToSpend += score
+
+        //clear sun and moon
+        window.moon = undefined
+        window.sun = undefined
+
+        // clear pollen
+        this.pollen = 0.0
+        this.pollenColor = []
+        
+        // clear audio
+        this.genre = undefined
         // insert some text to give user feedback / info
         let popUp = document.getElementById('message-div')
         if(score < 5){
-            popUp.textContent = '[+' + score + ' Life Points.] You have managed to create life in this vast emptiness! It is small but it is a start! Save up life points (see top left) to unlock more wonders of the universe!'
-        }else if(score >= 5){
+            popUp.textContent = '[+' + score + ' Life Points.] You have managed to create life in this vast emptiness! It is small but it is a start! Evolution is random so try again for a different result! Save up life points (see top left) to unlock more wonders of the universe!'
+        }else if(score >= 5 && score < 10){
             popUp.textContent = '[+' + score + ' Life Points] What a beauty! Some items can be stacked and their effects will accumulate. This can lead to some weird and wonderful plants!'
+        }else if(score >= 10 && score < 15){
+            popUp.textContent = '[+' + score + ' Life Points] Did you know different music can affect how life grows? Try out different music to see how this make your plant feel!'
+        }else if(score >= 15){
+            popUp.textContent = '[+' + score + ' Life Points] Looks liike you have gotten the hang of it! Keep going to see what wonderful liife you can bring to this world!'
         }
         popUp.textContent += ' Click this box to continue!'
         popUp.style.display = 'grid'
-
+        
         // when the dialog box is closed, clear the old tree
+        this.leafMeshes = 0
         popUp.addEventListener('click', () => 
             {  
                 popUp.style.display = 'none' //hide text
+                document.getElementsByClassName('play')[0].style.display = 'grid'
                 document.getElementById('inventory').style.display = 'grid' //show inventory
                 this.treeSegmentsMeshes.forEach(mesh => { //get rid of mesh and geomateries
                     if(mesh instanceof TreeSegment){
@@ -120,6 +155,9 @@ export default class GameManager
                 window.topSegment = undefined
                 if(this.sun){this.sun.destroy()}
                 if(this.moon){this.moon.destroy()}
+
+                // unlock ui
+                this.playing = false
             }
         )
         
@@ -130,39 +168,82 @@ export default class GameManager
     animateTree(){
         const animateSpeed = 0.05
         this.timeline = gsap.timeline({onComplete: () => {
-            for( let i = 0; i < this.treeSegmentsMeshes.length; i++){
-                if(this.treeSegmentsMeshes[i] instanceof THREE.Vector3){
-                    const newLeaf = new Leaf(this.treeSegmentsMeshes[i - 1].end)
-                }
-            }
-
             const pointsEarned = this.calculateScore() 
             document.querySelector('.score').textContent = this.pointsToSpend + pointsEarned
             this.endRound(pointsEarned)
-            this.playing = false
+            
         }})
         this.timeline.timeScale(0.1)
         this.timeline.pause()
-        this.treeSegmentsMeshes.forEach(element => {
-                if(element instanceof TreeSegment){
-                    this.timeline.to(
-                        element.tubeMaterial.uniforms.uProgress, 
+
+        // generate colours
+
+        this.pollenColor =[]
+
+        for(let i = 0; i < Math.floor(this.pollen); i++){
+            const newColor = new THREE.Color(Math.random(), Math.random(), Math.random())
+            this.pollenColor.push(newColor)
+        }
+
+        //some convoluted logic because i didn't set up signals and now its too close to the deadline!
+        let prevTree = []
+        let leavesToSpawn =[]
+        for( let i = 0; i < this.treeSegmentsMeshes.length; i++){
+            if(this.treeSegmentsMeshes[i] instanceof TreeSegment){
+                this.timeline.to(
+                    this.treeSegmentsMeshes[i].tubeMaterial.uniforms.uProgress,
                         {
                             duration: animateSpeed, 
                             value: 1.0, 
                             onStart: () => {
                                 this.max = new THREE.Vector3(
-                                    Math.max(this.max.x, Math.abs(element.end.x)),
-                                    Math.max(this.max.y, Math.abs(element.end.y)),
-                                    Math.max(this.max.z, Math.abs(element.end.z))
+                                    Math.max(this.max.x, Math.abs(this.treeSegmentsMeshes[i].end.x)),
+                                    Math.max(this.max.y, Math.abs(this.treeSegmentsMeshes[i].end.y)),
+                                    Math.max(this.max.z, Math.abs(this.treeSegmentsMeshes[i].end.z))
                                 )
-                                window.topSegment = this.max
-                                element.getMesh().visible = true
-                            }, // make each segment visible as the animation starts
+                            window.topSegment = this.max
+                            this.treeSegmentsMeshes[i].getMesh().visible = true
+                            },
+                            onComplete: () => {
+
+
+                                    if(leavesToSpawn.length > 0 && prevTree.includes(i - 1)){
+                                        
+                                        const newLeaf = new Leaf(leavesToSpawn[prevTree.indexOf(i - 1)], this.poo, this.pollenColor)
+                                    }
+                                    else if(i == this.treeSegmentsMeshes.length - 1){
+                                        if(leavesToSpawn.length > 0){
+                                            const newLeaf = new Leaf(leavesToSpawn[-1], this.poo, this.pollenColor)
+                                        }
+                                    }
+                                }
                         }
-                    )
-                }
-        })
+                )
+            }else{
+                prevTree.push(i)
+                leavesToSpawn.push(this.treeSegmentsMeshes[i])
+            }
+        }
+        // this.treeSegmentsMeshes.forEach(element => {
+        //         if(element instanceof TreeSegment){
+        //             this.timeline.to(
+        //                 element.tubeMaterial.uniforms.uProgress, 
+        //                 {
+        //                     duration: animateSpeed, 
+        //                     value: 1.0, 
+        //                     onStart: () => {
+        //                         this.max = new THREE.Vector3(
+        //                             Math.max(this.max.x, Math.abs(element.end.x)),
+        //                             Math.max(this.max.y, Math.abs(element.end.y)),
+        //                             Math.max(this.max.z, Math.abs(element.end.z))
+        //                         )
+        //                         window.topSegment = this.max
+        //                         element.getMesh().visible = true
+        //                     }, // make each segment visible as the animation starts
+        //                 }
+        //             )
+        //         }
+        // })
 
         return this.timeline
     }
@@ -175,8 +256,6 @@ export default class GameManager
         const treeSegments = newTree.generateTreePaths(treeString)
         treeSegments.forEach(element => {
             if(element[0]=='LEAVES'){
-                // const newLeaf = new Leaf(element[1])
-                // this.leafMeshes.push(newLeaf)
                 this.treeSegmentsMeshes.push(element[1])
             }
             else{
@@ -200,7 +279,9 @@ export default class GameManager
                 if(!this.playing){
                         // lock ui
                         this.playing = true
+
                         document.getElementById('inventory').style.display = 'none'
+                        document.getElementsByClassName('play')[0].style.display = 'none'
 
                         // set music base on ui selection
                         if(this.currentMusicTrack) {this.setUpAudio(this.currentMusicTrack)}
@@ -209,25 +290,55 @@ export default class GameManager
                         // const newTree = new LSystem('X', {'F': 'FFF', 'X':'F*X+^[[X]&-X]&-/F[*&-*FX]+^[X*]'}, 1, 0.25, 25, this.poo, this.sun, this.moon)
                         
                         
+                        // No Music
+                        const basicRules = 
+                            {
+                                'X': ['F[^X]F![&X]+X', 'F[^X]F[&X]+X','F[*X]F[/X]+X'],
+                                'F': ['FF','+F-', '/F*F'],
+                            }
                         // Classical Music
                         const classicRules = 
                             {
-                                'X': ['F[X]Y', 'FF', 'F[F]Y', 'F[Y]X' ],
-                                'F': ['FF', 'F[Y]X', 'Y[Y]X', 'FYF'],
-                                'Y': ['/F&F', '/F*F', '&F*F', '^F*F', '^F/F', '*F*F', '/F/F', '&F&F', '^F^F', '/Y[X]']
+                                'F': ['F[*FF][/FF]F[&F][^F]F', 'F[*FF][&FF]F[/F][^F]F', 'F[&FF][/FF]F[^F][*F]F']
                             }
                         // Jazz Music
                         const JazzRules = 
                             {
-                                'X': ['[^F^Y][/Y*F]&Y^F'],
-                                'F': ['FF', 'F[Y]X', 'Y[Y]X', 'FYF'],
-                                'Y': ['/F&F', '/F*F', '&F*F', '^F*F', '^F/F', '*F*F', '/F/F', '&F&F', '^F^F', '/Y[X]']
+                                'X': ['[*XFF]FF[^X]FF[&X]+X', '[/XFF]FF[^X]FF[&X]+X','[&XFF]FF[*X]FF[/X]+X'],
+                                'F': ['FF','+F-', '/F*F']
                             }
+                        
+                        // Spa Music
+                        const SpaRules = 
+                        {
+                            'F': ['-F[*FF][/FF]F[*F][/F]F', '+F[&FF][^FF]F[&F][^F]F','F[+FF][-FF]F[+F][-F]F', 'F[+FF][/FF]F[+F][/F]F', 'F[^FF][*FF]F[^F][*F]F']
+                        }
+                        
+                        // length and angle depends on type
+                        let rules = basicRules
+                        let angle = 45
+                        let length = 0.1
+                        let startingChar = 'X'
+                        if(this.genre == 'jazz'){
+                            rules = JazzRules
+                            length = 0.12
+                        }
+                        else if(this.genre == 'classical'){
+                            rules = classicRules
+                            startingChar = 'F'
+                            length = 0.2
+                        }
+                        else if(this.genre == 'spa'){
+                            rules = SpaRules
+                            startingChar = 'F'
+                        }
 
-                        const newTree = new LSystem('X', classicRules, 3, 0.10, 25, this.poo, this.sun, this.moon)
+                        const newTree = new LSystem(startingChar, rules, 1, length, angle, this.poo, this.sun, this.moon)
 
                         // generate tree based on lsystem
-                        this.generateTree(newTree, this.branchSize, 10, this.drunkness, this.poo)
+                        //TODO branch size depending on type
+                        
+                        this.generateTree(newTree, this.branchSize, 3, this.drunkness, this.poo)
 
                         // play animation 
                         this.animateTree()
@@ -320,33 +431,47 @@ export default class GameManager
                                 clearButton.removeAttribute('hidden')
                                 if(slotNumber == 'slot_6'){
                                     this.pollen = activeCount.textContent
-                                    this.pointsToSpend -= this.itemState[slotNumber]['useCost']
+                                    console.log(this.pointsToSpend)
+                                    if(this.pointsToSpend >= this.itemState[slotNumber]['useCost']){
+                                        this.pointsToSpend -= this.itemState[slotNumber]['useCost']
+                                    }
                                     document.querySelector('.score').textContent = this.pointsToSpend
                                 }
                                 if(slotNumber == 'slot_7'){
                                     this.poo = activeCount.textContent}
+                                    if(this.pointsToSpend >= this.itemState[slotNumber]['useCost']){
+                                        this.pointsToSpend -= this.itemState[slotNumber]['useCost']
+                                    }
                                     this.pointsToSpend -= this.itemState[slotNumber]['useCost']
                                     document.querySelector('.score').textContent = this.pointsToSpend
                                 if(slotNumber == 'slot_8'){
                                     this.drunkness = activeCount.textContent
-                                    this.pointsToSpend -= this.itemState[slotNumber]['useCost']
+                                    if(this.pointsToSpend >= this.itemState[slotNumber]['useCost']){
+                                        this.pointsToSpend -= this.itemState[slotNumber]['useCost']
+                                    }
                                     document.querySelector('.score').textContent = this.pointsToSpend
                                 }
                             } else{
                                 activeCount.textContent = Number(activeCount.textContent) + 1
                                 if(slotNumber == 'slot_6'){
                                     this.pollen = activeCount.textContent
-                                    this.pointsToSpend -= this.itemState[slotNumber]['useCost'] 
+                                    if(this.pointsToSpend >= this.itemState[slotNumber]['useCost']){
+                                        this.pointsToSpend -= this.itemState[slotNumber]['useCost']
+                                    }
                                     document.querySelector('.score').textContent = this.pointsToSpend
                                 }
                                 if(slotNumber == 'slot_7'){
                                     this.poo = activeCount.textContent
-                                    this.pointsToSpend -= this.itemState[slotNumber]['useCost'] 
+                                    if(this.pointsToSpend >= this.itemState[slotNumber]['useCost']){
+                                        this.pointsToSpend -= this.itemState[slotNumber]['useCost']
+                                    } 
                                     document.querySelector('.score').textContent = this.pointsToSpend
                                 }
                                 if(slotNumber == 'slot_8'){
                                     this.drunkness = activeCount.textContent
-                                    this.pointsToSpend -= this.itemState[slotNumber]['useCost'] 
+                                    if(this.pointsToSpend >= this.itemState[slotNumber]['useCost']){
+                                        this.pointsToSpend -= this.itemState[slotNumber]['useCost']
+                                    }
                                     document.querySelector('.score').textContent = this.pointsToSpend
                                 }
                             }
@@ -398,13 +523,13 @@ export default class GameManager
                 image:'./sun.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/sunrise.html
                 state: 'locked',
                 unlockCost: 1,
-                description: 'Discover the power of sunlight! [Free. Affects growth and color]'
+                description: 'Discover the power of sunlight! [Free. Affects growth]'
             },    
             slot_2: {
                 image: './night.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/night-sleep.html
                 state: 'locked',
                 unlockCost: 50,
-                description: 'Some plants thrive better in the moonlight [Free. Affects growth and color]'                
+                description: 'Some plants thrive better in the moonlight [Free. Affects growth]'                
             }, 
             slot_3: {
                 image: './classical.svg', // CC BY 3.0 https://game-icons.net/1x1/delapouite/classical-knowledge.html
@@ -429,12 +554,12 @@ export default class GameManager
                 state: 'locked',
                 unlockCost: 10,
                 useCost: 10,
-                description: 'Pollen enables sexual reproduction! [10pt each. Affects fruiting]'            
+                description: 'Cross pollenation can lead to new characteristics! [10pt each. Affects leaf color]'            
             }, 
             slot_7: {
                 image: './poo.svg', // CC BY 3.0 https://game-icons.net/1x1/lorc/turd.html
                 state: 'locked',
-                unlockCost: 5,
+                unlockCost: 10,
                 useCost: 10,
                 description: 'Plant food! Very smelly though... [10pt each. Affects growth]'            
             }, 
@@ -450,18 +575,23 @@ export default class GameManager
     }
 
     getMusic(genre){
+        this.genre = genre
         const tracks = {
             classical: [
-                './music/classic1.mp3', // CC BY 3.0 https://musopen.org/music/2491-two-arabesques-deux-arabesques-l-66/
-                './music/classic2.mp3' // PDM 1.0 3.0 https://musopen.org/music/3998-cello-suite-no-1-in-g-major-bwv-1007/
+                './music/melody/Presto.mp3', // CC BY 3.0 https://musopen.org/music/3935-violin-sonata-in-g-minor-bwv-1001/
+                './music/melody/Ukuaru_valss_fur_Klavier.mp3', // PDM 1.0 https://musopen.org/music/43990-ukuaru-valss-fur-klavier/
+                './music/melody/PianoSonatano_14_Moonlight.mp3', //PDM 1.0  https://musopen.org/music/2547-piano-sonata-no-14-in-c-sharp-minor-moonlight-sonata-op-27-no-2/
+                './music/melody/Allemande.mp3' // PDM 1.0  https://musopen.org/music/30912-french-suite-no-1-in-d-minor-bwv-812/
             ],
             jazz: [
-                './music/jazz1.mp3', // CC BY-NC-SA 3.0 https://freemusicarchive.org/music/Jazz_at_Mladost_Club/Jazz_Night
-                './music/jazz2.mp3' // CC BY-NC-SA 3.0 https://freemusicarchive.org/music/till-paradiso/
+                './music/jazz/jazz2.mp3', // CC BY-NC-SA 3.0 https://freemusicarchive.org/music/till-paradiso/
+                './music/jazz/joe-crotty-day-ahead.mp3', // CC BY 3.0 https://www.free-stock-music.com/joe-crotty-day-ahead.html
+                './music/jazz/kevin-macleod-airport-lounge.mp3' // CC BY 4.0 https://www.free-stock-music.com/kevin-macleod-airport-lounge.html
             ],
             spa: [
-                './music/spa1.mp3', // CC BY-NC-ND https://soundcloud.com/royaltyfreebackgroundmusic/creative-commons-music-2077
-                './music/spa2.mp3' // CC BY-NC-ND https://soundcloud.com/royaltyfreebackgroundmusic/creative-commons-music-2067
+                './music/spa/spa1.mp3', // CC BY-NC-ND https://soundcloud.com/royaltyfreebackgroundmusic/creative-commons-music-2077
+                './music/spa/spa2.mp3', // CC BY-NC-ND https://soundcloud.com/royaltyfreebackgroundmusic/creative-commons-music-2067
+                './music/spa/fsm-team-escp-komorebi.mp3' // CC BY 4.0 https://www.free-stock-music.com/fsm-team-escp-komorebi.html
             ]
         }
         

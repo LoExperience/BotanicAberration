@@ -63,12 +63,13 @@ export default class Moon{
         timeline.to(
             this.scene.background,
             {
-                r: 0.00,
-                g: 0.00,
-                b: 0.02,
+                r: 0.31,
+                g: 0.33,
+                b: 0.47,
                 duration:0.33
             }
         )
+        this.scene.background.colorSpace = THREE.SRGBColorSpace
     }
 
     destroy(){
@@ -96,7 +97,6 @@ export default class Moon{
                     this.scene.remove(this.moon)
                     this.directionalLight.dispose()
                     this.scene.remove(this.directionalLight)
-                    console.log(this.moon);
                 }
             }
         )

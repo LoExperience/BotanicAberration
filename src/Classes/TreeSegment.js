@@ -14,9 +14,9 @@ export default class TreeSegment
         midPoint.multiplyScalar(0.5)
         
         const drunkModifier = new THREE.Vector3(
-            Math.random() * (0.2 * (this.drunkness) / 7),
+            (Math.random() - 0.5) * (0.2 * (this.drunkness) / 6),
             0, 
-            Math.random() * (0.2 * (this.drunkness) / 7))
+            (Math.random() - 0.5) * (0.2 * (this.drunkness) / 6))
         midPoint.add(drunkModifier)
 
         this.curveControlPoint = midPoint
@@ -36,6 +36,17 @@ export default class TreeSegment
             this.radialSegments,
             false
         )
+        
+        this.trunkColor = new THREE.Vector3(1,1,1)
+
+        if(window.moon){
+            this.trunkColor = window.palette.moon[0]
+        }
+
+        if(window.sun){
+            this.trunkColor = window.palette.sun[0]
+        }
+
         this.tubeMaterial = new THREE.ShaderMaterial(
             {
                 transparent: true,
@@ -46,7 +57,7 @@ export default class TreeSegment
                     uProgress: {value: 0},
                     uStartPos: {value: this.start},
                     uEndPos: {value: this.end},
-                    uColor: {value: new THREE.Vector3(Math.random(), Math.random(), Math.random())}
+                    uColor: {value: this.trunkColor}
                 },
                 vertexShader:`
 
@@ -67,6 +78,7 @@ export default class TreeSegment
                 uniform float uProgress; // Uniform increasing from 0 to 1, used for animation
                 uniform vec3 uStartPos; // the starting position of each segment
                 uniform vec3 uEndPos; //the ending position of each segment
+                uniform vec3 uColor;
                 varying float vElevation;  // Varying for the vertex position
                 
                 void main() {
@@ -82,7 +94,7 @@ export default class TreeSegment
                     }    
 
                     // Set the output color
-                    gl_FragColor = vec4(0.75, 0.50, 0.39, alpha);
+                    gl_FragColor = vec4(uColor, alpha);
                 }
                 `
             })  

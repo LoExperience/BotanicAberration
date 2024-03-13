@@ -50,8 +50,8 @@ export default class LSystem
 
         //add leaf on the last open branch
         const lastBranch = newString.lastIndexOf('F')
-        const newerString = newString.slice(0,lastBranch) + '!' + newString.slice(lastBranch)
-        
+        let newerString = newString.slice(0,lastBranch) + '!' + newString.slice(lastBranch)
+        newerString = newString.slice() + '!'
         return newerString
     }
 

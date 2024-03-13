@@ -160,7 +160,7 @@ body
     left: 45%;
     transform: translateX(-50%);
     width: 70%; 
-    height: 5%;
+    height: 8%;
     display: none;
     grid-template-columns: repeat(1fr); 
     gap: 0px;
@@ -192,7 +192,7 @@ body
     background: #ffffff;
     transform: scaleX(0);
     transform-origin: top left;
-    transition: transform 1s ease-in-out;
+    transition: transform 8s ease-in-out;
 }
 
 #welcome-container {
